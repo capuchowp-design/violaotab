@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Cordas de Ouro CCB</title>
+<!-- PWA / Add to Home Screen -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c9a227">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cordas de Ouro CCB">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ══════════════════════════════════════
+   VARIÁVEIS DE TEMA — dark (padrão) e light
+   ══════════════════════════════════════ */
+:root {
+  --bg-app:        #06060f;
+  --bg-header:     linear-gradient(135deg,#12122e,#0a0a1a);
+  --bg-sidebar:    linear-gradient(180deg,#10102a,#080818);
+  --bg-canvas:     #06060f;
+  --bg-transport:  linear-gradient(180deg,#12122e,#0a0a18);
+  --bg-section:    #161638;
+  --bg-cell:       #1e1e3a;
+  --bg-topbar:     #12122e;
+  --bg-bottombar:  #12122e;
+  --bg-fretboard:  #12122e;
+  --bg-fb-cell:    #1e1e3a;
+  --bg-fb-label:   #1a1a3e;
+  --bg-modal:      linear-gradient(135deg,#161638,#10102a);
+  --bg-settings:   linear-gradient(180deg,#161638,#0e0e28);
+  --bg-input:      rgba(255,255,255,0.06);
+  --bg-inst-btn:   rgba(255,255,255,0.03);
+  --bg-bb-btn:     #161638;
+  --bg-save-item:  rgba(255,255,255,0.03);
+  --color-text:    #e0e0e0;
+  --color-sub:     #bbb;
+  --color-muted:   #777;
+  --color-dim:     #555;
+  --color-label:   #ccc;
+  --color-str-lbl: #ccc;
+  --color-dash:    #444;
+  --color-cell:    #ddd;
+  --color-fb-cell: #aaa;
+  --color-fb-lbl:  #ccc;
+  --border-main:   rgba(100,100,255,0.1);
+  --border-header: rgba(100,100,255,0.15);
+  --border-section:#2a2a4a;
+  --border-input:  rgba(255,255,255,0.1);
+  --border-inst:   rgba(255,255,255,0.1);
+  --btn-sec-bg:    rgba(255,255,255,0.06);
+  --btn-sec-color: #bbb;
+  --btn-sec-border:rgba(255,255,255,0.1);
+  --inst-btn-color:#888;
+  --inst-btn-hover-bg: rgba(0,212,255,0.1);
+  --inst-btn-active-bg:rgba(0,212,255,0.15);
+  --settings-h3:   #555;
+  --toggle-bg:     #2a2a4a;
+  --toggle-border: #444;
+  --vd-color:      #00d4ff;
+  --nli-bg:        rgba(255,255,255,0.02);
+  --save-name-border:rgba(255,255,255,0.1);
+  --save-name-color:#ccc;
+  --range-bg:      rgba(255,255,255,0.08);
+  --range-bg2:     rgba(255,255,255,0.1);
+  --page-label:    #666;
+  --tab-info:      #777;
+  --zoom-label:    #666;
+  --nav-btn-color: #aaa;
+  --insert-btn-border:#555;
+  --insert-btn-color: #888;
+  --fb-cell-hover: #2a2a5a;
+  --create-page-bg:#1a1a2e;
+  --prog-bg:       rgba(255,255,255,0.06);
+  --prog-time:     #555;
+  --toast-bg:      rgba(16,16,46,0.95);
+  --modal-bg:      rgba(0,0,0,0.8);
+}
+
+body.light {
+  --bg-app:        #f0f0f8;
+  --bg-header:     linear-gradient(135deg,#ffffff,#f0f0ff);
+  --bg-sidebar:    linear-gradient(180deg,#ffffff,#f5f5ff);
+  --bg-canvas:     #f0f0f8;
+  --bg-transport:  linear-gradient(135deg,#ffffff,#f5f5ff);
+  --bg-section:    #ffffff;
+  --bg-cell:       #e8edf7;
+  --bg-topbar:     #ffffff;
+  --bg-bottombar:  #ffffff;
+  --bg-fretboard:  #f0f0f8;
+  --bg-fb-cell:    #e8edf7;
+  --bg-fb-label:   #e0e5f0;
+  --bg-modal:      #ffffff;
+  --bg-settings:   #ffffff;
+  --bg-input:      rgba(0,0,0,0.04);
+  --bg-inst-btn:   rgba(0,0,0,0.03);
+  --bg-bb-btn:     #f0f0f8;
+  --bg-save-item:  rgba(0,0,0,0.02);
+  --color-text:    #1a1a2e;
+  --color-sub:     #444;
+  --color-muted:   #666;
+  --color-dim:     #888;
+  --color-label:   #333;
+  --color-str-lbl: #333;
+  --color-dash:    #ccc;
+  --color-cell:    #222;
+  --color-fb-cell: #444;
+  --color-fb-lbl:  #555;
+  --border-main:   #e0e0ee;
+  --border-header: #dde;
+  --border-section:#dde;
+  --border-input:  #ccc;
+  --border-inst:   #ddd;
+  --btn-sec-bg:    rgba(0,0,0,0.04);
+  --btn-sec-color: #555;
+  --btn-sec-border:#ccc;
+  --inst-btn-color:#555;
+  --inst-btn-hover-bg: rgba(0,100,255,0.08);
+  --inst-btn-active-bg:rgba(0,100,255,0.12);
+  --settings-h3:   #999;
+  --toggle-bg:     #e8e8f0;
+  --toggle-border: #ccc;
+  --vd-color:      #2563eb;
+  --nli-bg:        rgba(0,0,0,0.02);
+  --save-name-border:#ccc;
+  --save-name-color:#333;
+  --range-bg:      rgba(0,0,0,0.1);
+  --range-bg2:     rgba(0,0,0,0.08);
+  --page-label:    #888;
+  --tab-info:      #888;
+  --zoom-label:    #888;
+  --nav-btn-color: #555;
+  --insert-btn-border:#bbb;
+  --insert-btn-color: #888;
+  --fb-cell-hover: #d0d8f0;
+  --create-page-bg:#f5f5ff;
+  --prog-bg:       rgba(0,0,0,0.08);
+  --prog-time:     #888;
+  --toast-bg:      rgba(240,240,255,0.97);
+  --modal-bg:      rgba(0,0,0,0.5);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+body{
+  background:var(--bg-app);
+  color:var(--color-text);
+  font-family:'Inter',sans-serif;
+  overflow:hidden;
+  height:100dvh;
+  height:100vh;
+  width:100vw;
+  padding-bottom:env(safe-area-inset-bottom);
+  padding-bottom:constant(safe-area-inset-bottom);
+  transition:background .25s,color .25s;
+}
+
+.app-container{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  height:100vh;
+  max-height:100dvh;
+  max-height:100vh;
+  width:100vw;
+  overflow:hidden;
+}
+
+/* ── HEADER ── */
+.header{background:var(--bg-header);padding:8px 12px;padding-top:calc(8px + env(safe-area-inset-top));padding-top:calc(8px + constant(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-header);flex-shrink:0;flex-grow:0;z-index:10;}
+.logo{display:flex;align-items:center;gap:8px;}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#00d4ff,#7b2ff7);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo h1{font-size:16px;font-weight:700;font-family:'Orbitron',monospace;background:linear-gradient(90deg,#00d4ff,#7b2ff7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-actions{display:flex;gap:4px;align-items:center;}
+.btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;font-weight:500;transition:all .2s ease;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,#00d4ff,#0088cc);color:#fff;}
+.btn-primary:hover{box-shadow:0 4px 10px rgba(0,212,255,0.3);}
+.btn-secondary{background:var(--btn-sec-bg);color:var(--btn-sec-color);border:1px solid var(--btn-sec-border);}
+.btn-warning{background:rgba(255,170,0,0.12);color:#ffaa00;border:1px solid rgba(255,170,0,0.2);}
+/* Botão de modo */
+.btn-mode{background:rgba(123,47,247,0.15);color:#a06dff;border:1px solid rgba(123,47,247,0.3);}
+.btn-mode.active{background:linear-gradient(135deg,#7b2ff7,#00d4ff);color:#fff;border-color:transparent;}
+/* Botão tema global */
+.btn-theme{background:var(--toggle-bg);color:var(--color-muted);border:1px solid var(--toggle-border);}
+
+/* ── MAIN AREA ── */
+.main-area{flex:1;min-height:0;display:flex;overflow:hidden;position:relative;}
+.sidebar{width:220px;background:var(--bg-sidebar);border-right:1px solid var(--border-main);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:width .3s ease,transform .3s ease;z-index:20;}
+.sidebar.collapsed{width:0;border:none;overflow:hidden;}
+.sidebar-section{padding:12px 10px;border-bottom:1px solid var(--border-main);min-width:220px;}
+.sidebar-section h3{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--color-dim);margin-bottom:8px;font-weight:600;white-space:nowrap;}
+.instrument-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px;}
+.inst-btn{padding:8px 6px;border:1px solid var(--border-inst);background:var(--bg-inst-btn);border-radius:6px;cursor:pointer;text-align:center;font-size:10px;font-weight:600;color:var(--inst-btn-color);transition:all .2s;font-family:'Inter',sans-serif;}
+.inst-btn:hover{background:var(--inst-btn-hover-bg);border-color:rgba(0,212,255,0.3);color:#00d4ff;}
+.inst-btn.active{background:var(--inst-btn-active-bg);border-color:#00d4ff;color:#00d4ff;}
+.inst-btn .inst-icon{font-size:16px;display:block;margin-bottom:2px;}
+.control-group{margin-bottom:8px;}
+.control-group label{display:flex;justify-content:space-between;font-size:10px;color:var(--color-muted);margin-bottom:3px;font-weight:500;white-space:nowrap;}
+.control-group input[type="range"]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--range-bg);outline:none;}
+.control-group input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#00d4ff,#7b2ff7);cursor:pointer;}
+.vd{font-size:9px;color:var(--vd-color);font-weight:600;}
+.canvas-area{flex:1;min-height:0;min-width:0;position:relative;overflow:hidden;background:var(--bg-canvas);}
+#tabCanvas{display:block;width:100%;height:100%;}
+.sidebar-toggle{position:absolute;top:50%;transform:translateY(-50%);z-index:25;background:rgba(20,20,50,0.9);border:1px solid rgba(100,100,255,0.25);padding:8px 6px;cursor:pointer;color:#00d4ff;font-size:14px;transition:left .3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.3);border-radius:0 6px 6px 0;}
+body.light .sidebar-toggle{background:rgba(240,240,255,0.95);border-color:#bbd;color:#2563eb;}
+.sidebar-toggle.show{left:220px;}
+.sidebar-toggle.hide{left:0;}
+
+/* ── TRANSPORT BAR ── */
+.transport-bar{
+  background:var(--bg-transport);
+  border-top:1px solid var(--border-main);
+  padding:5px 10px;
+  padding-bottom:calc(5px + env(safe-area-inset-bottom));
+  padding-bottom:calc(5px + constant(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+  flex-grow:0;
+  flex-wrap:nowrap;
+  overflow:hidden;
+  z-index:100;
+  position:relative;
+}
+
+/* Grupo esquerdo: play/stop/loop */
+.tb-grp-play{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+/* Grupo BPM */
+.tb-grp-bpm{display:flex;align-items:center;gap:3px;flex-shrink:0;background:var(--bg-input);padding:2px 5px;border-radius:6px;border:1px solid var(--border-input);}
+/* Grupo instrumentos — ocupa espaço e faz scroll se necessário */
+.tb-grp-inst{display:flex;align-items:center;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;background:var(--bg-input);border-radius:6px;border:1px solid var(--border-input);}
+.tb-grp-inst::-webkit-scrollbar{display:none;}
+/* Grupo progresso */
+.tb-grp-prog{display:flex;flex-direction:column;gap:2px;flex-shrink:0;min-width:60px;max-width:120px;}
+/* Status áudio */
+.tb-grp-status{flex-shrink:0;}
+
+.tb{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;color:#fff;flex-shrink:0;}
+.tb-play{background:linear-gradient(135deg,#00d4ff,#0088cc);box-shadow:0 0 10px rgba(0,212,255,0.3);}
+.tb-stop{background:rgba(255,50,50,0.2);color:#ff6b6b;}
+.tb-loop{background:rgba(255,255,255,0.06);color:#888;}
+body.light .tb-loop{background:rgba(0,0,0,0.06);color:#666;}
+.tb-loop.active{background:rgba(0,255,136,0.15);color:#00ff88;}
+
+/* Botões de instrumento — ícone + nome curto */
+.inst-opt{
+  padding:4px 7px;
+  border:none;
+  background:none;
+  cursor:pointer;
+  font-size:11px;
+  font-weight:600;
+  color:var(--color-dim);
+  border-radius:4px;
+  transition:all .2s;
+  font-family:'Inter',sans-serif;
+  white-space:nowrap;
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+.inst-opt.active{background:rgba(0,212,255,0.15);color:#00d4ff;}
+.inst-opt:hover{color:var(--color-sub);}
+
+.bpm-label{font-size:9px;color:var(--color-muted);font-weight:600;}
+.bpm-input{width:30px;background:transparent;border:none;color:#00d4ff;font-weight:700;font-size:11px;text-align:center;font-family:monospace;outline:none;}
+body.light .bpm-input{color:#2563eb;}
+.bpm-btn{background:none;border:none;color:#00d4ff;cursor:pointer;font-size:12px;padding:0 2px;line-height:1;}
+body.light .bpm-btn{color:#2563eb;}
+
+.progress-bg{width:100%;height:4px;background:var(--prog-bg);border-radius:2px;cursor:pointer;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00d4ff,#7b2ff7);border-radius:2px;width:0%;}
+.progress-time{display:flex;justify-content:space-between;font-size:8px;color:var(--prog-time);font-family:monospace;}
+
+.audio-status{font-size:9px;padding:2px 5px;border-radius:3px;font-weight:600;background:rgba(255,170,0,0.12);color:#ffaa00;border:1px solid rgba(255,170,0,0.2);white-space:nowrap;}
+.audio-status.ready{background:rgba(0,255,136,0.12);color:#00ff88;border-color:rgba(0,255,136,0.2);}
+
+/* ── SCORE HUD (Guitar Hero) ── */
+#ghHUD{position:absolute;top:10px;right:12px;z-index:30;pointer-events:none;display:none;flex-direction:column;align-items:flex-end;gap:4px;}
+#ghHUD.visible{display:flex;}
+.hud-score{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#fff;text-shadow:0 0 20px #00d4ff,0 0 40px #7b2ff7;letter-spacing:2px;}
+.hud-combo{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#ffd43b;text-shadow:0 0 12px #ffd43b;}
+.hud-streak{display:flex;gap:4px;margin-top:2px;}
+.hud-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);}
+.hud-dot.lit{background:#ffd43b;border-color:#ffd43b;box-shadow:0 0 6px #ffd43b;}
+/* ── HIT FEEDBACK ── */
+.hit-text{position:absolute;left:50%;top:40%;transform:translateX(-50%);font-family:'Orbitron',monospace;font-size:28px;font-weight:900;pointer-events:none;z-index:40;opacity:0;transition:none;text-shadow:0 0 30px currentColor;}
+
+/* ── SETTINGS MODAL ── */
+.settings-modal-overlay{
+  position:fixed;inset:0;background:var(--modal-bg);z-index:3000;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.settings-modal-overlay.open{display:flex;}
+.settings-modal{
+  background:var(--bg-settings);
+  border:1px solid var(--border-main);
+  border-radius:20px 20px 0 0;
+  width:100%;max-width:520px;
+  padding:16px 18px 24px;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+  max-height:82dvh;max-height:82vh;
+  overflow-y:auto;
+  color:var(--color-text);
+}
+.settings-modal-handle{
+  width:40px;height:4px;background:rgba(128,128,128,0.3);
+  border-radius:2px;margin:0 auto 14px;
+}
+.settings-modal h2{
+  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;
+  color:#00d4ff;margin-bottom:14px;letter-spacing:1px;
+}
+.settings-section{margin-bottom:14px;}
+.settings-section h3{
+  font-size:10px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--settings-h3);margin-bottom:8px;font-weight:600;
+}
+.settings-inst-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px;}
+.settings-inst-btn{
+  padding:10px 6px;border:1px solid var(--border-inst);
+  background:var(--bg-inst-btn);border-radius:8px;
+  cursor:pointer;text-align:center;font-size:11px;font-weight:600;
+  color:var(--inst-btn-color);transition:all .2s;font-family:'Inter',sans-serif;
+}
+.settings-inst-btn.active{background:var(--inst-btn-active-bg);border-color:#00d4ff;color:#00d4ff;}
+.settings-inst-btn .si{font-size:20px;display:block;margin-bottom:3px;}
+.settings-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.settings-row label{font-size:11px;color:var(--color-sub);white-space:nowrap;min-width:90px;}
+.settings-row .val{font-size:11px;color:#00d4ff;font-weight:700;min-width:36px;text-align:right;}
+.settings-row input[type=range]{
+  flex:1;-webkit-appearance:none;height:5px;border-radius:3px;
+  background:var(--range-bg2);outline:none;cursor:pointer;
+}
+.settings-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,#00d4ff,#7b2ff7);cursor:pointer;
+  box-shadow:0 0 6px rgba(0,212,255,0.4);
+}
+.settings-close{
+  width:100%;padding:12px;margin-top:8px;
+  background:rgba(0,212,255,0.12);border:1px solid rgba(0,212,255,0.25);
+  border-radius:10px;color:#00d4ff;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:'Inter',sans-serif;
+}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--toast-bg);border:1px solid rgba(0,212,255,0.25);border-radius:8px;padding:8px 16px;color:#00d4ff;font-size:11px;font-weight:500;z-index:2000;transition:transform .3s ease,opacity .3s ease;pointer-events:none;white-space:nowrap;opacity:0;}
+body.light .toast{color:#2563eb;border-color:rgba(37,99,235,0.3);}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--modal-bg);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(6px);}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--bg-modal);border:1px solid var(--border-main);border-radius:14px;padding:20px;min-width:300px;max-width:95vw;max-height:90vh;overflow-y:auto;color:var(--color-text);}
+.modal h2{font-size:16px;margin-bottom:12px;background:linear-gradient(90deg,#00d4ff,#7b2ff7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.modal-actions{display:flex;gap:4px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap;}
+
+/* ── CREATE PAGE ── */
+.create-page{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--create-page-bg);color:var(--color-text);z-index:50;display:none;flex-direction:column;transition:background .25s,color .25s;}
+.create-page.active{display:flex;}
+.create-topbar{background:var(--bg-topbar);border-bottom:1px solid var(--border-section);padding:6px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.create-topbar .left{display:flex;align-items:center;gap:8px;}
+.create-topbar .logo-text{font-size:14px;font-weight:700;color:#00d4ff;font-family:'Orbitron',monospace;}
+.create-topbar .right{display:flex;gap:6px;align-items:center;}
+.topbar-btn{padding:4px 8px;border:none;background:none;cursor:pointer;color:var(--color-sub);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:4px;}
+.topbar-btn:hover{background:var(--bg-input);}
+.topbar-btn .icon{font-size:14px;}
+.theme-toggle{padding:4px 8px;border:1px solid var(--toggle-border);background:var(--toggle-bg);cursor:pointer;font-size:14px;border-radius:4px;}
+.create-content{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;}
+.tab-scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 0 12px;}
+.tab-section{background:var(--bg-section);border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid var(--border-main);}
+.tab-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.tab-section-header h3{font-size:12px;color:var(--color-muted);font-weight:500;}
+.tab-section-header .controls{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
+.insert-btn{padding:3px 8px;border:1px dashed var(--insert-btn-border);background:none;color:var(--insert-btn-color);font-size:10px;cursor:pointer;border-radius:3px;}
+.zoom-controls{display:flex;align-items:center;gap:4px;}
+.zoom-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--toggle-border);background:none;color:var(--nav-btn-color);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.zoom-level{font-size:10px;color:var(--zoom-label);min-width:35px;text-align:center;}
+.nav-controls{display:flex;gap:4px;}
+.nav-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--toggle-border);background:none;color:var(--nav-btn-color);cursor:pointer;font-size:12px;}
+.nav-btn.delete{border-color:rgba(255,80,80,0.3);color:#ff6b6b;}
+.tab-display-wrapper{overflow-x:auto;overflow-y:hidden;position:relative;}
+.tab-display{position:relative;padding:4px 0;transition:transform .2s ease;transform-origin:top left;}
+.tab-display-inner{display:inline-block;min-width:100%;}
+.tab-string-row{display:flex;align-items:center;height:24px;position:relative;}
+.tab-string-label{width:16px;font-size:11px;font-weight:700;color:var(--color-str-lbl);text-align:center;flex-shrink:0;}
+.tab-string-line{flex:1;position:relative;height:100%;display:flex;align-items:center;}
+.tab-string-dash{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--color-dash);}
+.tab-cell{width:26px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--color-cell);cursor:pointer;position:relative;z-index:2;flex-shrink:0;}
+.tab-cell:hover{background:rgba(0,212,255,0.1);border-radius:3px;}
+.tab-cell.active{color:#00d4ff;background:rgba(0,212,255,0.15);border-radius:3px;}
+.tab-cell.cursor{outline:2px solid #00d4ff;outline-offset:-1px;border-radius:2px;background:rgba(0,212,255,0.15);}
+.tab-cell.empty{color:transparent;}
+.fretboard-area{flex-shrink:0;border-top:1px solid var(--border-main);background:var(--bg-fretboard);padding:8px 12px;z-index:10;}
+.fretboard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.fretboard-header h3{font-size:11px;color:var(--color-muted);font-weight:500;}
+.fretboard-scroll{overflow-x:auto;padding-bottom:4px;}
+.fretboard-grid{display:grid;grid-template-columns:40px repeat(25,36px);gap:1px;min-width:max-content;}
+.fretboard-label{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--color-fb-lbl);background:var(--bg-fb-label);border-radius:3px;}
+.fret-num-header{display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--color-muted);}
+.fb-cell{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:var(--color-fb-cell);background:var(--bg-fb-cell);border-radius:3px;cursor:pointer;min-height:28px;}
+.fb-cell:hover{background:var(--fb-cell-hover);color:#00d4ff;}
+.fb-cell.highlight{background:#00d4ff;color:#0a0a1a;font-weight:700;}
+.create-bottombar{background:var(--bg-bottombar);border-top:1px solid var(--border-section);padding:8px;display:flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;}
+.bb-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--toggle-border);background:var(--bg-bb-btn);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--color-sub);}
+.bb-btn.primary{background:#00d4ff;color:#0a0a1a;border-color:#00d4ff;}
+.action-btn{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;}
+.action-btn.load{background:#00d4ff;color:#0a0a1a;}
+.action-btn.clear{background:var(--bg-bb-btn);color:var(--color-sub);border:1px solid var(--toggle-border);}
+.action-btn.play{background:#10b981;color:#fff;}
+.tab-info{font-size:10px;color:var(--tab-info);margin-top:6px;}
+.create-actions-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+#midiFileInput{display:none;}
+.nli{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;margin-bottom:2px;background:var(--nli-bg);font-size:10px;color:var(--color-text);}
+.nli .ni{flex:1;}
+.nli button{width:20px;height:20px;border-radius:3px;border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;}
+.nli .bd{background:rgba(255,50,50,0.12);color:#ff6b6b;}
+.saved-tabs-list{max-height:300px;overflow-y:auto;}
+.saved-tab-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:6px;margin-bottom:4px;background:var(--bg-save-item);border:1px solid transparent;transition:all .2s;}
+.saved-tab-item:hover{background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.2);}
+.saved-tab-item .st-name{font-size:12px;font-weight:600;color:var(--color-label);}
+.saved-tab-item .st-date{font-size:9px;color:var(--color-muted);}
+.saved-tab-item .st-actions{display:flex;gap:4px;}
+.saved-tab-item .st-actions button{width:24px;height:24px;border-radius:4px;border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;}
+.saved-tab-item .st-load{background:rgba(0,212,255,0.12);color:#00d4ff;}
+.saved-tab-item .st-del{background:rgba(255,50,50,0.12);color:#ff6b6b;}
+.save-name-input{width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--save-name-border);border-radius:6px;color:var(--save-name-color);font-family:'Inter',sans-serif;font-size:12px;outline:none;margin-bottom:10px;}
+.save-name-input:focus{border-color:#00d4ff;}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVIDADE UNIVERSAL — TODAS AS TELAS
+   ═══════════════════════════════════════════════ */
+
+/* ── TV / Monitor grande (1400px+) ── */
+@media(min-width:1400px){
+  .header{padding:10px 20px;}
+  .logo h1{font-size:20px;}
+  .logo-icon{width:34px;height:34px;font-size:18px;}
+  .btn{padding:8px 14px;font-size:13px;}
+  .sidebar{width:260px;}
+  .sidebar-toggle.show{left:260px;}
+  .sidebar-section{padding:14px 12px;}
+  .inst-btn{padding:10px 8px;font-size:11px;}
+  .inst-btn .inst-icon{font-size:18px;}
+  .transport-bar{padding:8px 16px;gap:10px;}
+  .tb{width:36px;height:36px;font-size:15px;}
+  .inst-opt{padding:5px 12px;font-size:12px;}
+  .bpm-label{font-size:10px;}
+  .bpm-input{width:40px;font-size:13px;}
+  .tb-grp-prog{max-width:180px;}
+  .hud-score{font-size:28px;}
+  .hud-combo{font-size:16px;}
+}
+
+/* ── Notebook / Desktop médio (1024–1399px) ── */
+@media(min-width:1024px) and (max-width:1399px){
+  .sidebar{width:230px;}
+  .sidebar-toggle.show{left:230px;}
+  .transport-bar{padding:6px 14px;gap:8px;}
+  .tb{width:32px;height:32px;}
+  .inst-opt{padding:4px 10px;font-size:11px;}
+  .tb-grp-prog{max-width:150px;}
+}
+
+/* ── Tablet landscape (768–1023px) ── */
+@media(min-width:768px) and (max-width:1023px){
+  .sidebar{width:200px;}
+  .sidebar-toggle.show{left:200px;}
+  .inst-btn{font-size:9px;padding:6px 4px;}
+  .transport-bar{padding:5px 10px;gap:6px;}
+  .tb{width:30px;height:30px;font-size:12px;}
+  .inst-opt{padding:4px 7px;font-size:10px;}
+  .bpm-input{width:28px;font-size:10px;}
+  .tb-grp-prog{max-width:100px;}
+}
+
+/* ── Qualquer tela < 768px (mobile portrait + landscape) ── */
+@media(max-width:767px){
+  .header{padding:5px 8px;}
+  .logo h1{font-size:12px;}
+  .logo-icon{width:22px;height:22px;font-size:11px;}
+  .btn{padding:5px 7px;font-size:10px;}
+  .btn span{display:none;}
+
+  /* Sidebar overlay */
+  .sidebar{
+    width:85% !important;max-width:300px;
+    height:100%;position:absolute;top:0;left:0;
+    transform:translateX(-100%);z-index:50;border:none;
+    transition:transform .3s ease;
+  }
+  .sidebar.mobile-open{transform:translateX(0) !important;}
+  .sidebar.collapsed{transform:translateX(-100%) !important;}
+  .sidebar-toggle{left:0 !important;top:50%;transform:translateY(-50%);border-radius:0 6px 6px 0;}
+  .sidebar-toggle.show{left:0 !important;}
+
+  /* Transport bar — SEMPRE 1 linha horizontal, compacta */
+  .transport-bar{padding:4px 6px;gap:4px;flex-wrap:nowrap;align-items:center;}
+  .tb{width:32px;height:32px;font-size:13px;}
+  .tb-grp-play{gap:3px;}
+  .bpm-label{font-size:8px;}
+  .bpm-input{width:26px;font-size:11px;}
+  .bpm-btn{font-size:11px;}
+  /* Instrumentos: rótulo de texto some, fica só emoji */
+  .inst-lbl{display:none;}
+  .inst-opt{padding:4px 6px;font-size:13px;gap:0;}
+  /* Progresso */
+  .tb-grp-prog{min-width:50px;max-width:80px;}
+  .progress-bg{height:4px;}
+  .progress-time{font-size:7px;}
+  /* Status curto */
+  .audio-status{font-size:8px;padding:2px 4px;}
+
+  /* Modais */
+  .modal{min-width:92%;padding:14px;}
+
+  /* Fretboard */
+  .fretboard-grid{grid-template-columns:30px repeat(25,32px);}
+  .fb-cell{min-height:26px;font-size:10px;}
+  .fretboard-area{padding:6px 8px;}
+
+  /* Tab display — células maiores e mais espaçadas no mobile */
+  .tab-cell{width:32px;height:30px;font-size:12px;}
+  .tab-string-row{height:30px;}
+  .tab-string-label{width:18px;font-size:12px;}
+
+  /* HUD */
+  .hud-score{font-size:14px;letter-spacing:1px;}
+  .hud-combo{font-size:10px;}
+  .hud-dot{width:5px;height:5px;}
+}
+
+/* ── Mobile landscape (altura < 500px — qualquer largura) ── */
+@media(max-height:500px){
+  /* Header ultra-compacto */
+  .header{padding:3px 8px !important;}
+  .logo-icon{width:18px;height:18px;font-size:10px;}
+  .logo h1{font-size:11px;}
+  .btn{padding:3px 6px;font-size:10px;}
+
+  /* Transport bar ultra-compacta — NUNCA some */
+  .transport-bar{padding:3px 6px !important;gap:4px;}
+  .tb{width:28px;height:28px;font-size:12px;}
+  .tb-grp-play{gap:2px;}
+  .bpm-label{font-size:7px;}
+  .bpm-input{width:24px;font-size:10px;}
+  .bpm-btn{font-size:10px;padding:0 1px;}
+  .inst-lbl{display:none;}
+  .inst-opt{padding:3px 5px;font-size:12px;gap:0;}
+  .tb-grp-prog{min-width:40px;max-width:70px;}
+  .progress-bg{height:3px;}
+  .progress-time{font-size:6px;}
+  /* Status esconde em landscape */
+  .audio-status{display:none;}
+  /* BPM sempre visível em landscape — não esconde */
+  .tb-grp-bpm{display:flex !important;}
+  /* Settings btn sempre visível */
+  .tb-cfg{display:flex !important;}
+
+  /* Tab editor em landscape — compactar fretboard */
+  .fretboard-area{padding:4px 8px;}
+  .fb-cell{min-height:20px;font-size:9px;}
+  .fretboard-grid{grid-template-columns:26px repeat(25,26px);}
+  .tab-cell{width:28px;height:26px;font-size:11px;}
+  .tab-string-row{height:26px;}
+}
+
+/* ── Celular muito pequeno (< 360px) ── */
+@media(max-width:359px){
+  .logo h1{display:none;}
+  .tb{width:28px;height:28px;font-size:12px;}
+  .inst-opt{padding:3px 5px;font-size:12px;}
+  .bpm-input{width:22px;}
+  .tb-grp-prog{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <div class="logo"><div class="logo-icon">🎸</div><h1>Cordas de Ouro CCB</h1></div>
+    <div class="header-actions">
+      <button class="btn btn-mode active" id="modeBtn" onclick="toggleViewMode()">🎮 GH Mode</button>
+      <button class="btn btn-theme" id="globalThemeBtn" onclick="toggleGlobalTheme()" title="Modo Claro/Escuro">🌙</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('midiFileInput').click()">📁 MIDI</button>
+      <input type="file" id="midiFileInput" accept=".mid,.midi">
+      <button class="btn btn-secondary" onclick="exportMIDI()">💾</button>
+      <button class="btn btn-warning" onclick="openCreate()">✏️ Criar</button>
+      <button class="btn btn-secondary" id="mobileMenuBtn" onclick="toggleMobileMenu()" style="display:none;">☰</button>
+    </div>
+  </div>
+  <div class="main-area">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-section">
+        <h3>🎵 Instrumento</h3>
+        <div class="instrument-grid">
+          <button class="inst-btn active" id="instBtn_nylon" onclick="setInst('nylon',this)"><span class="inst-icon">🎸</span>Nylon</button>
+          <button class="inst-btn" id="instBtn_steel" onclick="setInst('steel',this)"><span class="inst-icon">🎸</span>Aço</button>
+          <button class="inst-btn" id="instBtn_electric" onclick="setInst('electric',this)"><span class="inst-icon">⚡</span>Elétrica</button>
+          <button class="inst-btn" id="instBtn_piano" onclick="setInst('piano',this)"><span class="inst-icon">🎹</span>Piano</button>
+          <button class="inst-btn" id="instBtn_violin" onclick="setInst('violin',this)"><span class="inst-icon">🎻</span>Violino</button>
+          <button class="inst-btn" id="instBtn_bass" onclick="setInst('bass',this)"><span class="inst-icon">🎵</span>Baixo</button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>🎮 Guitar Hero</h3>
+        <div class="control-group"><label>Velocidade <span class="vd" id="ghSpeedD">1x</span></label><input type="range" id="ghSpeedS" min="0.5" max="3" step="0.1" value="1" oninput="setGhSpeed(this.value)"></div>
+        <div class="control-group"><label>Perspectiva <span class="vd" id="ghPerspD">On</span></label><input type="range" id="ghPerspS" min="0" max="1" step="1" value="1" oninput="setGhPersp(this.value)"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>🎛️ Controles</h3>
+        <div class="control-group"><label>Volume <span class="vd" id="volD">70%</span></label><input type="range" id="volS" min="0" max="100" value="70" oninput="setVol(this.value)"></div>
+        <div class="control-group"><label>Decaimento <span class="vd" id="decayD">70%</span></label><input type="range" id="decayS" min="10" max="100" value="70" oninput="setDecay(this.value)"></div>
+        <div class="control-group"><label>Espaçamento <span class="vd" id="spcD">100%</span></label><input type="range" id="spcS" min="50" max="200" value="100" oninput="setSpacing(this.value)"></div>
+      </div>
+      <div class="sidebar-section">
+        <button class="btn" style="width:100%;justify-content:center;background:rgba(255,50,50,0.12);color:#ff6b6b;border:1px solid rgba(255,50,50,0.2);" onclick="clearAllNotes()">🗑️ Limpar Notas</button>
+      </div>
+    </div>
+    <button class="sidebar-toggle show" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+    <div class="canvas-area">
+      <canvas id="tabCanvas"></canvas>
+      <!-- Guitar Hero HUD -->
+      <div id="ghHUD" class="visible">
+        <div class="hud-score" id="hudScore">000000</div>
+        <div class="hud-combo" id="hudCombo">x0 COMBO</div>
+        <div class="hud-streak" id="hudStreak"></div>
+      </div>
+      <!-- Hit Feedback -->
+      <div class="hit-text" id="hitText"></div>
+    </div>
+  </div>
+
+  <div class="transport-bar">
+    <!-- Play / Stop / Loop -->
+    <div class="tb-grp-play">
+      <button class="tb tb-play" id="playBtn" onclick="togglePlay()">▶</button>
+      <button class="tb tb-stop" onclick="stopPlayback()">⏹</button>
+      <button class="tb tb-loop" id="loopBtn" onclick="toggleLoop()">🔁</button>
+    </div>
+    <!-- BPM -->
+    <div class="tb-grp-bpm">
+      <span class="bpm-label">BPM</span>
+      <button class="bpm-btn" onclick="adjustBPM(-5)">−</button>
+      <input type="text" class="bpm-input" id="bpmInput" value="120" onchange="setBPM(this.value)">
+      <button class="bpm-btn" onclick="adjustBPM(5)">+</button>
+    </div>
+    <!-- Instrumentos — scroll horizontal, ocupa espaço disponível -->
+    <div class="tb-grp-inst">
+      <button class="inst-opt active" onclick="setInst('nylon',this)" title="Nylon">🎸<span class="inst-lbl">Nylon</span></button>
+      <button class="inst-opt" onclick="setInst('steel',this)" title="Aço">🎸<span class="inst-lbl">Aço</span></button>
+      <button class="inst-opt" onclick="setInst('electric',this)" title="Elétrica">⚡<span class="inst-lbl">Elétr.</span></button>
+      <button class="inst-opt" onclick="setInst('piano',this)" title="Piano">🎹<span class="inst-lbl">Piano</span></button>
+      <button class="inst-opt" onclick="setInst('violin',this)" title="Violino">🎻<span class="inst-lbl">Violino</span></button>
+      <button class="inst-opt" onclick="setInst('bass',this)" title="Baixo">🎵<span class="inst-lbl">Baixo</span></button>
+    </div>
+    <!-- Progresso -->
+    <div class="tb-grp-prog">
+      <div class="progress-bg" id="progBg" onclick="seekTo(event)"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-time"><span id="curTime">0:00</span><span id="totTime">0:00</span></div>
+    </div>
+    <!-- Status áudio -->
+    <div class="tb-grp-status">
+      <span class="audio-status" id="audioStatus">🎵...</span>
+    </div>
+    <!-- Botão configurações (abre modal bottom-sheet) -->
+    <button class="tb tb-cfg" onclick="openSettings()" title="Configurações" style="background:rgba(123,47,247,0.2);color:#a06dff;flex-shrink:0;">⚙️</button>
+  </div>
+</div>
+
+<!-- SETTINGS BOTTOM-SHEET MODAL -->
+<div class="settings-modal-overlay" id="settingsOverlay" onclick="closeSettingsOutside(event)">
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-modal-handle"></div>
+    <h2>⚙️ Configurações</h2>
+
+    <div class="settings-section">
+      <h3>🎵 Instrumento</h3>
+      <div class="settings-inst-grid">
+        <button class="settings-inst-btn active" id="sInstBtn_nylon" onclick="setInstFromSettings('nylon')"><span class="si">🎸</span>Nylon</button>
+        <button class="settings-inst-btn" id="sInstBtn_steel" onclick="setInstFromSettings('steel')"><span class="si">🎸</span>Aço</button>
+        <button class="settings-inst-btn" id="sInstBtn_electric" onclick="setInstFromSettings('electric')"><span class="si">⚡</span>Elétrica</button>
+        <button class="settings-inst-btn" id="sInstBtn_piano" onclick="setInstFromSettings('piano')"><span class="si">🎹</span>Piano</button>
+        <button class="settings-inst-btn" id="sInstBtn_violin" onclick="setInstFromSettings('violin')"><span class="si">🎻</span>Violino</button>
+        <button class="settings-inst-btn" id="sInstBtn_bass" onclick="setInstFromSettings('bass')"><span class="si">🎵</span>Baixo</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>🎮 Guitar Hero</h3>
+      <div class="settings-row">
+        <label>Velocidade</label>
+        <input type="range" min="0.5" max="3" step="0.1" value="1" id="sGhSpeed" oninput="setGhSpeedS(this.value)">
+        <span class="val" id="sGhSpeedVal">1.0x</span>
+      </div>
+      <div class="settings-row">
+        <label>Perspectiva</label>
+        <input type="range" min="0" max="1" step="1" value="1" id="sGhPersp" oninput="setGhPerspS(this.value)">
+        <span class="val" id="sGhPerspVal">On</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>🎛️ Controles de Áudio</h3>
+      <div class="settings-row">
+        <label>Volume</label>
+        <input type="range" min="0" max="100" value="70" id="sVol" oninput="setVolS(this.value)">
+        <span class="val" id="sVolVal">70%</span>
+      </div>
+      <div class="settings-row">
+        <label>Decaimento</label>
+        <input type="range" min="10" max="100" value="70" id="sDecay" oninput="setDecayS(this.value)">
+        <span class="val" id="sDecayVal">70%</span>
+      </div>
+      <div class="settings-row">
+        <label>Espaçamento</label>
+        <input type="range" min="50" max="200" value="100" id="sSpc" oninput="setSpcS(this.value)">
+        <span class="val" id="sSpcVal">100%</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>🎨 Aparência</h3>
+      <div class="settings-row">
+        <label>Tema</label>
+        <button onclick="toggleGlobalTheme()" id="sThemeBtn" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--border-inst);background:var(--bg-inst-btn);color:var(--color-text);cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;">🌙 Modo Escuro</button>
+      </div>
+    </div>
+
+    <button class="settings-close" onclick="closeSettings()">✓ Fechar</button>
+  </div>
+</div>
+
+<!-- CREATE PAGE -->
+<div class="create-page" id="createPage">
+  <div class="create-topbar">
+    <div class="left"><div class="logo-text">🎸 TabMaker</div></div>
+    <div class="right">
+      <button class="topbar-btn" onclick="openSaveModal()" title="Salvar">💾</button>
+      <button class="topbar-btn" onclick="openLoadModal()" title="Carregar">📂</button>
+      <button class="topbar-btn" onclick="undoAction()"><span class="icon">↩️</span></button>
+      <button class="topbar-btn" onclick="redoAction()"><span class="icon">↪️</span></button>
+      <button class="topbar-btn" onclick="clearTabEditor()"><span class="icon">🗑️</span></button>
+      <button class="topbar-btn" onclick="closeCreate()"><span class="icon">✕</span></button>
+    </div>
+  </div>
+  <div class="create-content">
+    <div class="tab-scroll-area">
+      <div class="tab-section" id="tabSection">
+        <div class="tab-section-header">
+          <h3>Tablatura</h3>
+          <div class="controls">
+            <button class="insert-btn" onclick="addSection()">+ Seção</button>
+            <div class="zoom-controls">
+              <span style="font-size:9px;color:#666;">Zoom</span>
+              <button class="zoom-btn" onclick="zoomTab(-10)">−</button>
+              <span class="zoom-level" id="zoomLevel">100%</span>
+              <button class="zoom-btn" onclick="zoomTab(10)">+</button>
+            </div>
+            <div class="nav-controls">
+              <button class="nav-btn" onclick="navCursor(-1)">◀</button>
+              <button class="nav-btn delete" onclick="deleteColumn()">🗑️</button>
+              <button class="nav-btn" onclick="navCursor(1)">▶</button>
+            </div>
+          </div>
+        </div>
+        <div class="tab-display-wrapper" id="tabWrapper">
+          <div id="tabDisplayContainer"></div>
+        </div>
+        <div class="tab-info" id="tabInfo">0 notas | Posição: 0 | Página: 1</div>
+        <div class="create-actions-row">
+          <button class="action-btn play" onclick="playTab()">▶ Tocar</button>
+          <button class="action-btn load" onclick="loadTabToMain()">💾 Carregar</button>
+        </div>
+      </div>
+    </div>
+    <div class="fretboard-area">
+      <div class="fretboard-header"><h3>🎸 Braço (Clique para adicionar notas)</h3></div>
+      <div class="fretboard-scroll"><div class="fretboard-grid" id="fretboardGrid"></div></div>
+    </div>
+  </div>
+  <div class="create-bottombar">
+    <button class="bb-btn" onclick="undoAction()">↩️</button>
+    <button class="bb-btn" onclick="redoAction()">↪️</button>
+    <button class="bb-btn primary" onclick="loadTabToMain()">💾</button>
+    <button class="bb-btn" onclick="closeCreate()">✕</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal">
+    <h2>💾 Salvar Tablatura</h2>
+    <input type="text" class="save-name-input" id="saveNameInput" placeholder="Nome da tablatura..." maxlength="50">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeSaveModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveTab()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="loadModal">
+  <div class="modal">
+    <h2>📂 Carregar Tablatura</h2>
+    <div class="saved-tabs-list" id="savedTabsList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeLoadModal()">Fechar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="edModal">
+  <div class="modal">
+    <h2>✏️ Editor</h2>
+    <div id="noteList"></div>
+    <div class="modal-actions">
+      <button class="btn" style="background:rgba(255,50,50,0.12);color:#ff6b6b;" onclick="clearAllNotes()">🗑️ Limpar</button>
+      <button class="btn btn-primary" onclick="closeEditor()">Fechar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+// CONSTANTES E ESTADO GLOBAL
+// ================================================================
+const canvas = document.getElementById('tabCanvas'), ctx = canvas.getContext('2d');
+const STR = [40, 45, 50, 55, 59, 64];
+const SNAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
+
+// Cores Guitar Hero por corda — clássico GH: verde, vermelho, amarelo, azul, laranja, roxo
+const GH_COLORS = [
+  { main: '#ff4444', glow: '#ff0000', dark: '#8b0000' },  // E grave — vermelho
+  { main: '#ff8c00', glow: '#ff6600', dark: '#7a3500' },  // A — laranja
+  { main: '#ffd700', glow: '#ffcc00', dark: '#7a6000' },  // D — amarelo
+  { main: '#00e676', glow: '#00ff88', dark: '#005c30' },  // G — verde
+  { main: '#2979ff', glow: '#00d4ff', dark: '#002a8a' },  // B — azul
+  { main: '#e040fb', glow: '#cc00ff', dark: '#5c007a' },  // e agudo — roxo
+];
+
+let notes = [], playing = false, looping = false, curTime = 0, curIdx = 0;
+let bpm = 120, vol = 0.7, inst = 'nylon', lastTS = 0, animId = null, spacing = 1.0;
+let sidebarOpen = true, isDark = true, decayFactor = 0.7;
+let glows = [];
+
+// ── CONTAGEM REGRESSIVA ──
+// curTime começa em valor negativo = AHEAD_SEC (tempo para nota do topo chegar ao botão)
+// Durante esse período negativo, mostramos 3-2-1 no canvas
+let ghLeadIn = 0;   // quantos segundos negativos antes do tempo 0 (calculado no play)
+
+// ── MODO GUITAR HERO ──
+let ghMode = true;          // começa em GH mode
+let ghSpeed = 1.0;          // velocidade de queda (px/s multiplier)
+let ghPerspective = true;   // perspectiva 3D
+let ghScore = 0, ghCombo = 0, ghStreak = 0;
+let ghParticles = [];       // explosão de partículas no hit
+let ghHitAnims = [];        // feedback de texto no hit
+
+const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+if (isMobile) {
+  document.getElementById('mobileMenuBtn').style.display = 'flex';
+  document.getElementById('sidebarToggle').style.display = 'none';
+  document.getElementById('sidebar').classList.add('collapsed');
+}
+
+// ================================================================
+// MOTOR DE ÁUDIO — soundfont-player
+// ================================================================
+const SOUNDFONT_MAP = {
+  nylon:    'acoustic_guitar_nylon',
+  steel:    'acoustic_guitar_steel',
+  electric: 'electric_guitar_clean',
+  piano:    'acoustic_grand_piano',
+  violin:   'violin',
+  bass:     'electric_bass_finger',
+};
+
+let sfAudioContext = null, sfInstruments = {}, sfCurrentInstrument = null;
+
+function initSfAudio() {
+  if (!sfAudioContext) sfAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+  if (sfAudioContext.state === 'suspended') sfAudioContext.resume();
+}
+
+async function loadInstrument(instName) {
+  initSfAudio();
+  const sfName = SOUNDFONT_MAP[instName] || 'acoustic_guitar_nylon';
+  if (sfInstruments[sfName]) { sfCurrentInstrument = sfInstruments[sfName]; return sfCurrentInstrument; }
+  updateAudioStatus(false);
+  showToast(`🎵 Carregando ${instName}...`);
+  try {
+    const instrument = await Soundfont.instrument(sfAudioContext, sfName, {
+      soundfont: 'FluidR3_GM', format: 'mp3',
+      nameToUrl: (name, sf, format) => `https://gleitz.github.io/midi-js-soundfonts/${sf}/${name}-${format}.js`
+    });
+    sfInstruments[sfName] = instrument; sfCurrentInstrument = instrument;
+    updateAudioStatus(true); showToast(`✅ ${instName} pronto!`);
+    return instrument;
+  } catch (err) {
+    try {
+      const instrument = await Soundfont.instrument(sfAudioContext, sfName, { soundfont: 'MusyngKite', format: 'mp3' });
+      sfInstruments[sfName] = instrument; sfCurrentInstrument = instrument;
+      updateAudioStatus(true); return instrument;
+    } catch { updateAudioStatus(false, true); sfCurrentInstrument = null; return null; }
+  }
+}
+
+function updateAudioStatus(ready, error = false) {
+  const el = document.getElementById('audioStatus');
+  if (error) { el.textContent = '⚠️ Offline'; el.className = 'audio-status'; el.style.cssText = 'background:rgba(255,50,50,.12);color:#ff6b6b'; }
+  else if (ready) { el.textContent = '✅ Pronto'; el.className = 'audio-status ready'; el.style.cssText = ''; }
+  else { el.textContent = '⏳ Carregando...'; el.className = 'audio-status'; el.style.cssText = ''; }
+}
+
+function playNote(midi, dur, v, isSustained) {
+  if (!sfCurrentInstrument) { loadInstrument(inst); return; }
+  if (sfAudioContext && sfAudioContext.state === 'suspended') {
+    sfAudioContext.resume().then(() => _doPlay(midi, dur, v, isSustained));
+    return;
+  }
+  _doPlay(midi, dur, v, isSustained);
+}
+function _doPlay(midi, dur, v, isSustained) {
+  if (!sfCurrentInstrument || !sfAudioContext) return;
+  const useVol = v !== undefined ? v : vol;
+  const useDur = Math.max(dur || 0.5, 0.15);
+  const now = sfAudioContext.currentTime;
+
+  try {
+    // Toca a nota pelo soundfont-player com duração longa para não cortar antes
+    // e aplica um GainNode programado para fazer o fade no momento exato do corte.
+    const gainNode = sfAudioContext.createGain();
+    gainNode.connect(sfAudioContext.destination);
+
+    // Volume inicial
+    gainNode.gain.setValueAtTime(useVol * 2, now);
+    // Ataque suave (5ms)
+    gainNode.gain.linearRampToValueAtTime(useVol * 2, now + 0.005);
+    // Sustain pleno até o fim do intervalo
+    gainNode.gain.setValueAtTime(useVol * 2, now + useDur - 0.01);
+    // Fade out de 10ms no final — corte preciso e sem clique
+    gainNode.gain.linearRampToValueAtTime(0, now + useDur + 0.01);
+
+    // Passa duração generosa ao soundfont (useDur + 2s) para que o sample
+    // não seja interrompido antes do nosso GainNode terminar o fade.
+    sfCurrentInstrument.play(String(midi), now, {
+      duration: useDur + 2.0,
+      gain: 1.0,           // ganho controlado pelo GainNode
+      destination: gainNode
+    });
+  } catch (e) {
+    // Fallback: play simples sem GainNode
+    try {
+      sfCurrentInstrument.play(String(midi), now, {
+        duration: useDur,
+        gain: useVol * 2
+      });
+    } catch (e2) { console.warn('Erro ao tocar nota:', e2); }
+  }
+}
+
+// ================================================================
+// UTILIDADES
+// ================================================================
+function midiFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+function fretMidi(s, f) { return STR[s] + f; }
+function midiToName(m) {
+  const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  return names[m % 12] + (Math.floor(m / 12) - 1);
+}
+
+// ================================================================
+// CANVAS RESIZE
+// ================================================================
+function resize() {
+  const r = canvas.parentElement;
+  canvas.width = r.clientWidth * devicePixelRatio;
+  canvas.height = r.clientHeight * devicePixelRatio;
+  canvas.style.width = r.clientWidth + 'px';
+  canvas.style.height = r.clientHeight + 'px';
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+
+// ── Guarda de segurança: transport-bar nunca some no GitHub Pages / mobile ──
+// A barra do browser no mobile muda o viewport dinamicamente;
+// se a transport-bar ficar fora da tela, fixamos ela na base.
+function ensureTransportVisible() {
+  const tb = document.querySelector('.transport-bar');
+  const app = document.querySelector('.app-container');
+  if (!tb || !app) return;
+  const vh = window.innerHeight;
+  const tbRect = tb.getBoundingClientRect();
+  const hidden = tbRect.bottom > vh + 2 || tbRect.height < 8;
+  if (hidden) {
+    const tbH = Math.max(44, tbRect.height || 50);
+    tb.style.cssText = 'position:fixed!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;z-index:9999!important;';
+    app.style.paddingBottom = tbH + 'px';
+  } else {
+    tb.style.cssText = '';
+    app.style.paddingBottom = '';
+  }
+}
+
+window.addEventListener('resize', () => { resize(); setTimeout(ensureTransportVisible, 100); });
+window.addEventListener('orientationchange', () => setTimeout(ensureTransportVisible, 350));
+window.visualViewport && window.visualViewport.addEventListener('resize', () => setTimeout(ensureTransportVisible, 100));
+document.addEventListener('DOMContentLoaded', () => setTimeout(ensureTransportVisible, 200));
+resize();
+setTimeout(ensureTransportVisible, 300);
+
+function totalDur() { return notes.length ? notes[notes.length - 1].time + 0.5 : 0; }
+
+// ================================================================
+// GUITAR HERO — MODO DE VISUALIZAÇÃO VERTICAL
+// ================================================================
+function drawGuitarHero() {
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
+  const NUM_STRINGS = 6;
+  const isLight = document.body.classList.contains('light');
+
+  // --- Fundo: escuro arcade OU claro estilo palco iluminado ---
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  if (isLight) {
+    bg.addColorStop(0, '#e8eaf6');
+    bg.addColorStop(0.6, '#f0f0fb');
+    bg.addColorStop(1, '#dde0f5');
+  } else {
+    bg.addColorStop(0, '#000008');
+    bg.addColorStop(0.7, '#03031a');
+    bg.addColorStop(1, '#0a0030');
+  }
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // --- Grade de perspectiva no fundo (estilo GH) ---
+  if (ghPerspective) drawGhGrid(W, H, isLight);
+
+  const PAD_L = 20, PAD_R = 20;
+  const trackTotalW = W - PAD_L - PAD_R;
+  const trackW = trackTotalW / NUM_STRINGS;
+  const HIT_ZONE_Y = H - 120;   // linha de acerto
+  const NOTE_SPEED = 200 * ghSpeed * spacing; // px/s
+  const AHEAD_SEC = HIT_ZONE_Y / NOTE_SPEED;
+
+  // Perspectiva — mesmo ponto de fuga do grid
+  const VP_X = W / 2;
+  const VP_Y = ghPerspective ? H * 0.05 : 0;
+  const topScale = ghPerspective ? 0.45 : 1.0;
+  const topW = trackTotalW * topScale;
+
+  // Helper: posição X da nota em Y dado índice de corda (perspectiva real)
+  function noteX(s, y) {
+    const progress = Math.max(0, (y - VP_Y) / (HIT_ZONE_Y - VP_Y));
+    const curW = topW + (trackTotalW - topW) * progress;
+    const curX0 = VP_X - curW / 2;
+    return curX0 + (s + 0.5) * (curW / NUM_STRINGS);
+  }
+  function trackX0(s, y) {
+    const progress = Math.max(0, (y - VP_Y) / (HIT_ZONE_Y - VP_Y));
+    const curW = topW + (trackTotalW - topW) * progress;
+    const curX0 = VP_X - curW / 2;
+    return curX0 + s * (curW / NUM_STRINGS);
+  }
+
+  // --- Trilhas coloridas em perspectiva ---
+  for (let s = 0; s < NUM_STRINGS; s++) {
+    const col = GH_COLORS[s];
+
+    // Desenhar trilha como trapézio com gradiente de cor
+    const xTopL = trackX0(s, VP_Y);
+    const xTopR = trackX0(s + 1, VP_Y);
+    const xBotL = trackX0(s, HIT_ZONE_Y);
+    const xBotR = trackX0(s + 1, HIT_ZONE_Y);
+
+    const trackGrad = ctx.createLinearGradient(0, VP_Y, 0, HIT_ZONE_Y);
+    trackGrad.addColorStop(0, `${col.main}00`);
+    trackGrad.addColorStop(0.5, `${col.main}08`);
+    trackGrad.addColorStop(1, `${col.main}1a`);
+    ctx.fillStyle = trackGrad;
+    ctx.beginPath();
+    ctx.moveTo(xTopL, VP_Y);
+    ctx.lineTo(xTopR, VP_Y);
+    ctx.lineTo(xBotR, HIT_ZONE_Y);
+    ctx.lineTo(xBotL, HIT_ZONE_Y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Corda de aço 3D — perspectiva: mais fina no topo, mais grossa na base
+    const xMidTop = (xTopL + xTopR) / 2;
+    const xMidBot = (xBotL + xBotR) / 2;
+    // Espessuras variam por corda (E grave mais grossa, e aguda mais fina)
+    const stringThickBase = [4.5, 3.8, 3.2, 2.6, 2.0, 1.4][s];
+    const steps = 40;
+    for (let si = 0; si < steps; si++) {
+      const t0 = si / steps, t1 = (si + 1) / steps;
+      const y0 = VP_Y + (HIT_ZONE_Y - VP_Y) * t0;
+      const y1 = VP_Y + (HIT_ZONE_Y - VP_Y) * t1;
+      const x0 = xMidTop + (xMidBot - xMidTop) * t0;
+      const x1 = xMidTop + (xMidBot - xMidTop) * t1;
+      const thick = stringThickBase * (0.25 + 0.75 * t0);
+      const tMid = (t0 + t1) / 2;
+
+      // Sombra da corda (parte escura — efeito cilíndrico)
+      ctx.strokeStyle = col.dark + 'cc';
+      ctx.lineWidth = thick + 1.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+
+      // Corpo da corda (cor principal)
+      ctx.strokeStyle = col.main + 'dd';
+      ctx.lineWidth = thick;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+
+      // Reflexo de luz (highlight branco no topo da corda — cilindro)
+      const highlightAlpha = Math.round(0.55 * 255).toString(16).padStart(2, '0');
+      ctx.strokeStyle = `#ffffff${highlightAlpha}`;
+      ctx.lineWidth = Math.max(0.5, thick * 0.28);
+      ctx.beginPath(); ctx.moveTo(x0 - thick * 0.18, y0); ctx.lineTo(x1 - thick * 0.18, y1); ctx.stroke();
+
+      // Brilho de cor (neon glow sutil)
+      if (tMid > 0.3) {
+        const glowAlpha = Math.round((0.08 + 0.22 * tMid) * 255).toString(16).padStart(2, '0');
+        ctx.strokeStyle = col.glow + glowAlpha;
+        ctx.lineWidth = thick * 2.5;
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+      }
+    }
+
+    // --- Botão da hit zone (hexágono/círculo na base de cada pista) ---
+    const bx = noteX(s, HIT_ZONE_Y);
+    const by = HIT_ZONE_Y + 22;
+
+    ctx.shadowColor = col.glow;
+    ctx.shadowBlur = 20;
+
+    // Anel externo
+    ctx.beginPath();
+    ctx.arc(bx, by, 24, 0, Math.PI * 2);
+    ctx.strokeStyle = col.main;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Interior do botão
+    const isActive = glows.some(g => notes[g.idx] && notes[g.idx].string === s && g.intensity > 0.3);
+    const btnGrad = ctx.createRadialGradient(bx - 5, by - 5, 0, bx, by, 24);
+    if (isActive) {
+      btnGrad.addColorStop(0, '#ffffff');
+      btnGrad.addColorStop(0.3, col.glow);
+      btnGrad.addColorStop(1, col.dark);
+    } else if (isLight) {
+      btnGrad.addColorStop(0, col.glow + '44');
+      btnGrad.addColorStop(1, '#d0d4f0');
+    } else {
+      btnGrad.addColorStop(0, col.dark + 'cc');
+      btnGrad.addColorStop(1, '#000015');
+    }
+    ctx.beginPath();
+    ctx.arc(bx, by, 22, 0, Math.PI * 2);
+    ctx.fillStyle = btnGrad;
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = isActive ? '#000' : col.main;
+    ctx.font = `700 11px 'Orbitron', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(SNAMES[s], bx, by);
+  }
+
+  ctx.shadowBlur = 0;
+
+  // --- Linha de acerto (hit zone) ---
+  const hitGrad = ctx.createLinearGradient(0, 0, W, 0);
+  hitGrad.addColorStop(0, 'rgba(0,212,255,0)');
+  hitGrad.addColorStop(0.1, 'rgba(0,212,255,0.8)');
+  hitGrad.addColorStop(0.5, '#ffffff');
+  hitGrad.addColorStop(0.9, 'rgba(0,212,255,0.8)');
+  hitGrad.addColorStop(1, 'rgba(0,212,255,0)');
+  ctx.beginPath();
+  ctx.moveTo(PAD_L, HIT_ZONE_Y);
+  ctx.lineTo(W - PAD_R, HIT_ZONE_Y);
+  ctx.strokeStyle = hitGrad;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Brilho na hit zone
+  const hitGlow = ctx.createLinearGradient(0, HIT_ZONE_Y - 6, 0, HIT_ZONE_Y + 6);
+  hitGlow.addColorStop(0, 'rgba(0,212,255,0)');
+  hitGlow.addColorStop(0.5, 'rgba(0,212,255,0.08)');
+  hitGlow.addColorStop(1, 'rgba(0,212,255,0)');
+  ctx.fillStyle = hitGlow;
+  ctx.fillRect(PAD_L, HIT_ZONE_Y - 6, W - PAD_L - PAD_R, 12);
+
+  // --- NOTAS descendo com perspectiva real ---
+  for (let i = 0; i < notes.length; i++) {
+    const n = notes[i];
+    const dt = n.time - curTime;
+    if (dt > AHEAD_SEC + 0.3 || dt < -0.6) continue;
+
+    const s = n.string;
+    const col = GH_COLORS[s];
+    let y = HIT_ZONE_Y - dt * NOTE_SPEED;
+
+    // Posição X real na perspectiva (nota se move horizontalmente ao descer)
+    const cx = ghPerspective ? noteX(s, y) : PAD_L + s * trackW + trackW / 2;
+
+    // Perspectiva: notas ficam menores quando mais longe (no topo)
+    const perspProgress = ghPerspective ? Math.max(0, Math.min(1, (y - VP_Y) / (HIT_ZONE_Y - VP_Y))) : 1.0;
+    const perspScale = ghPerspective ? Math.max(0.3, 0.3 + 0.7 * perspProgress) : 1.0;
+    const r = 18 * perspScale;
+
+    const glow = glows.find(g => g.idx === i);
+    const gi = glow ? glow.intensity : 0;
+
+    // Trilha da nota (cauda) — também em perspectiva
+    if (n.dur > 0.25) {
+      const tailLen = Math.min(n.dur * NOTE_SPEED * perspScale, 80 * perspScale);
+      const tailGrad = ctx.createLinearGradient(0, y, 0, y - tailLen);
+      tailGrad.addColorStop(0, col.main + 'cc');
+      tailGrad.addColorStop(1, col.main + '00');
+      ctx.fillStyle = tailGrad;
+      ctx.fillRect(cx - r * 0.35, y - tailLen, r * 0.7, tailLen);
+    }
+
+    // Halo de glow
+    ctx.shadowColor = col.glow;
+    ctx.shadowBlur = 20 + gi * 20;
+
+    // Corpo da nota
+    const noteGrad = ctx.createRadialGradient(cx - r * 0.3, y - r * 0.3, 0, cx, y, r);
+    if (gi > 0.3) {
+      noteGrad.addColorStop(0, '#ffffff');
+      noteGrad.addColorStop(0.4, col.glow);
+      noteGrad.addColorStop(1, col.main);
+    } else {
+      noteGrad.addColorStop(0, '#ffffff');
+      noteGrad.addColorStop(0.35, col.main);
+      noteGrad.addColorStop(1, col.dark);
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = noteGrad;
+    ctx.fill();
+
+    // Anel da nota
+    ctx.strokeStyle = gi > 0.3 ? '#ffffff' : col.glow;
+    ctx.lineWidth = gi > 0.3 ? 2.5 : 1.5;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Número do fret — maior e mais visível conforme se aproxima do botão
+    // perspScale vai de ~0.3 (topo) até 1.0 (hit zone)
+    const fontSize = Math.max(9, 18 * perspScale);
+    const fretText = n.fret.toString();
+    // Outline/sombra para legibilidade
+    if (perspScale > 0.3) {
+      ctx.font = `900 ${fontSize}px 'Orbitron', monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      // Sombra preta para contraste
+      ctx.shadowColor = 'rgba(0,0,0,0.9)';
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = gi > 0.3 ? '#000000' : '#000000';
+      // Stroke de contorno
+      ctx.strokeStyle = gi > 0.3 ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = Math.max(1, fontSize * 0.28);
+      ctx.strokeText(fretText, cx, y);
+      // Texto principal — branco quando se aproxima, cor do glow quando longe
+      const textAlpha = Math.min(1, 0.5 + perspScale * 0.7);
+      ctx.fillStyle = gi > 0.3 ? '#000000' :
+        perspScale > 0.65 ? `rgba(255,255,255,${textAlpha})` :
+        col.glow;
+      ctx.fillText(fretText, cx, y);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  ctx.shadowBlur = 0;
+
+  // --- Partículas de hit ---
+  for (let i = ghParticles.length - 1; i >= 0; i--) {
+    const p = ghParticles[i];
+    if (p.life <= 0) { ghParticles.splice(i, 1); continue; }
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // --- Texto de feedback de hit ---
+  for (let i = ghHitAnims.length - 1; i >= 0; i--) {
+    const h = ghHitAnims[i];
+    if (h.life <= 0) { ghHitAnims.splice(i, 1); continue; }
+    ctx.globalAlpha = Math.min(1, h.life * 2);
+    ctx.shadowColor = h.color;
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = h.color;
+    ctx.font = `900 ${22 + (1 - h.life) * 8}px 'Orbitron', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(h.text, h.x, h.y - (1 - h.life) * 30);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+  }
+
+  // --- Estado vazio ---
+  if (notes.length === 0) {
+    ctx.fillStyle = isLight ? 'rgba(60,60,180,0.5)' : 'rgba(100,100,255,0.3)';
+    ctx.font = '14px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🎸 Nenhuma nota carregada', W / 2, H / 2 - 10);
+    ctx.font = '11px Inter';
+    ctx.fillText('Importe MIDI ou use o botão "Criar"', W / 2, H / 2 + 15);
+  }
+
+  // ── CONTAGEM REGRESSIVA (lead-in) ──
+  if (playing && curTime < 0 && ghLeadIn > 0) {
+    const countSec = Math.ceil(-curTime);          // 3, 2, 1
+    const fracInSec = (-curTime) % 1;              // fração dentro do segundo (1→0)
+    const progress = 1 - fracInSec;               // 0 = recém mudou, 1 = prestes a mudar
+
+    // Overlay escurecido (ou clareado em light mode)
+    ctx.fillStyle = isLight
+      ? `rgba(220,220,240,${0.35 - 0.15 * progress})`
+      : `rgba(0,0,20,${0.4 - 0.2 * progress})`;
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2;
+    const cy = H / 2 - 30;
+
+    // Círculo pulsante
+    const ringR = 65 + 18 * (1 - progress);
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(0,212,255,${0.2 + 0.3 * progress})`;
+    ctx.lineWidth = 3 + 5 * (1 - progress);
+    ctx.stroke();
+
+    // Arco de progresso (esvazia conforme o segundo passa)
+    ctx.beginPath();
+    ctx.arc(cx, cy, ringR, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * fracInSec, false);
+    ctx.strokeStyle = `rgba(0,212,255,${0.6 + 0.4 * fracInSec})`;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Número — entra grande e vai para tamanho normal
+    const scale = 1.7 - 0.7 * progress;
+    const numAlpha = progress < 0.82 ? 1.0 : (1.0 - (progress - 0.82) / 0.18);
+    const fontSize = Math.round(88 * scale);
+    ctx.save();
+    ctx.globalAlpha = numAlpha;
+    ctx.shadowColor = '#00d4ff';
+    ctx.shadowBlur = 50 - 30 * progress;
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `900 ${fontSize}px 'Orbitron', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const numStr = countSec >= 3 ? '3' : countSec.toString();
+    ctx.fillText(numStr, cx, cy);
+    ctx.restore();
+
+    // Label abaixo
+    const labels = {3: 'ATENÇÃO...', 2: 'PRONTO...', 1: 'VÁ!'};
+    const label = labels[Math.min(countSec, 3)] || '';
+    const lblAlpha = Math.min(1, fracInSec * 5) * (progress < 0.75 ? 1 : (1 - progress) / 0.25);
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, lblAlpha);
+    ctx.fillStyle = '#00d4ff';
+    ctx.font = `700 ${Math.round(14 * Math.max(0.8, scale * 0.7))}px 'Orbitron', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, cx, cy + 68);
+    ctx.restore();
+  }
+}
+
+// Grade de perspectiva (estilo corredor de GH) — com efeito de braço inclinado
+function drawGhGrid(W, H, isLight) {
+  const HIT_Y = H - 120;
+  const VP_X = W / 2;
+  const VP_Y = H * 0.05;
+
+  const PAD_L = 20, PAD_R = 20;
+  const NUM_STRINGS = 6;
+  const trackTotalW = W - PAD_L - PAD_R;
+  const topScale = 0.45;
+  const topW = trackTotalW * topScale;
+  const topX0 = VP_X - topW / 2;
+  const topX1 = VP_X + topW / 2;
+
+  // Gradiente de fundo do braço — madeira clara no light, escuro no dark
+  const neckGrad = ctx.createLinearGradient(0, VP_Y, 0, HIT_Y);
+  if (isLight) {
+    neckGrad.addColorStop(0, 'rgba(180,160,120,0.55)');
+    neckGrad.addColorStop(0.5, 'rgba(160,140,100,0.50)');
+    neckGrad.addColorStop(1, 'rgba(140,120,80,0.45)');
+  } else {
+    neckGrad.addColorStop(0, 'rgba(5,5,30,0.95)');
+    neckGrad.addColorStop(0.5, 'rgba(8,8,40,0.9)');
+    neckGrad.addColorStop(1, 'rgba(15,15,55,0.85)');
+  }
+  ctx.fillStyle = neckGrad;
+  ctx.beginPath();
+  ctx.moveTo(topX0, VP_Y);
+  ctx.lineTo(topX1, VP_Y);
+  ctx.lineTo(PAD_L + trackTotalW, HIT_Y);
+  ctx.lineTo(PAD_L, HIT_Y);
+  ctx.closePath();
+  ctx.fill();
+
+  // Linhas horizontais em perspectiva (trastes)
+  const barCount = 16;
+  for (let i = 0; i <= barCount; i++) {
+    const t = i / barCount;
+    const rawY = VP_Y + (HIT_Y - VP_Y) * Math.pow(t, 1.8);
+    const progress = (rawY - VP_Y) / (HIT_Y - VP_Y);
+    const lineW = topW + (trackTotalW - topW) * progress;
+    const lineX0 = VP_X - lineW / 2;
+    const alpha = 0.06 + 0.28 * progress;
+    ctx.strokeStyle = isLight
+      ? `rgba(80,60,30,${alpha * 1.5})`
+      : `rgba(60,160,255,${alpha})`;
+    ctx.lineWidth = 0.8 + progress * 0.8;
+    ctx.beginPath();
+    ctx.moveTo(lineX0, rawY);
+    ctx.lineTo(lineX0 + lineW, rawY);
+    ctx.stroke();
+  }
+
+  // Linhas verticais das pistas convergindo ao ponto de fuga
+  for (let s = 0; s <= NUM_STRINGS; s++) {
+    const xBottom = PAD_L + s * (trackTotalW / NUM_STRINGS);
+    const xTop = topX0 + s * (topW / NUM_STRINGS);
+    const alpha = s === 0 || s === NUM_STRINGS ? 0.25 : 0.10;
+    ctx.strokeStyle = isLight
+      ? `rgba(80,60,20,${alpha * 1.5})`
+      : `rgba(0,120,220,${alpha})`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(xBottom, HIT_Y);
+    ctx.lineTo(xTop, VP_Y);
+    ctx.stroke();
+  }
+
+  // Reflexo de luz lateral (neon bordas)
+  const sideColor = isLight ? '200,140,40' : '0,150,255';
+  const leftGrad = ctx.createLinearGradient(PAD_L, 0, PAD_L + 18, 0);
+  leftGrad.addColorStop(0, `rgba(${sideColor},0.45)`);
+  leftGrad.addColorStop(1, `rgba(${sideColor},0)`);
+  ctx.fillStyle = leftGrad;
+  ctx.beginPath();
+  ctx.moveTo(topX0 - 2, VP_Y);
+  ctx.lineTo(topX0 + 18, VP_Y);
+  ctx.lineTo(PAD_L + 18, HIT_Y);
+  ctx.lineTo(PAD_L - 2, HIT_Y);
+  ctx.closePath();
+  ctx.fill();
+
+  const rightGrad = ctx.createLinearGradient(W - PAD_R, 0, W - PAD_R - 18, 0);
+  rightGrad.addColorStop(0, `rgba(${sideColor},0.45)`);
+  rightGrad.addColorStop(1, `rgba(${sideColor},0)`);
+  ctx.fillStyle = rightGrad;
+  ctx.beginPath();
+  ctx.moveTo(topX1 + 2, VP_Y);
+  ctx.lineTo(topX1 - 18, VP_Y);
+  ctx.lineTo(W - PAD_R - 18, HIT_Y);
+  ctx.lineTo(W - PAD_R + 2, HIT_Y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ================================================================
+// MODO CLÁSSICO (visualização horizontal original)
+// ================================================================
+function drawClassic() {
+  const W = canvas.width / devicePixelRatio, H = canvas.height / devicePixelRatio;
+  const isSm = W < 500;
+  const pad = { t: isSm?10:15, r: isSm?8:40, b: isSm?8:10, l: isSm?28:42 };
+  const tw = W - pad.l - pad.r, th = H - pad.t - pad.b;
+  const sSpace = Math.max(18, Math.min(th / 8, th / 6));
+  const tMax = totalDur();
+  // Linha de play fixa a 25% da largura — notas chegam da direita e passam por ela
+  const playLineX = pad.l + tw * 0.25;
+  const SCOLS = ['#ff6b6b','#ffa94d','#ffd43b','#69db7c','#74c0fc','#da77f2'];
+  const noteR = Math.max(11, Math.min(16, sSpace * 0.52));
+  const labelFontSize = Math.max(11, Math.min(20, sSpace * 0.75));
+  const fretFontSize = Math.max(10, Math.min(16, noteR * 1.0));
+  const minGapPx = noteR * 2.6;
+  // Velocidade fixa: notas se movem a uma velocidade constante da direita para a esquerda.
+  // 120px/s base * spacing. A nota em curTime+0 está na playLineX, notas futuras à direita.
+  const pxPerSec = 120 * spacing;
+  const isLight = document.body.classList.contains('light');
+
+  ctx.clearRect(0, 0, W, H);
+  if (isLight) {
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#f5f5ff'); bg.addColorStop(.5,'#f0f0f8'); bg.addColorStop(1,'#f5f5ff');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  } else {
+    const bg = ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#06060f'); bg.addColorStop(.5,'#080818'); bg.addColorStop(1,'#06060f');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+  }
+
+  const totalStringsHeight = sSpace * 5;
+  const startY = pad.t + (th - totalStringsHeight) / 2;
+
+  for (let visIdx = 0; visIdx < STR.length; visIdx++) {
+    const strIdx = STR.length - 1 - visIdx;
+    const y = startY + sSpace * visIdx;
+    const col = SCOLS[strIdx];
+    const [cr,cg,cb] = [parseInt(col.slice(1,3),16),parseInt(col.slice(3,5),16),parseInt(col.slice(5,7),16)];
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},0.7)`;
+    ctx.lineWidth = strIdx < 2 ? 2.5 : strIdx < 4 ? 2.0 : 1.6;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+    ctx.fillStyle = col; ctx.font = `800 ${labelFontSize}px Inter`;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(SNAMES[strIdx], pad.l-4, y);
+  }
+
+  ctx.fillStyle = 'rgba(100,100,255,0.15)';
+  ctx.font = '10px Inter'; ctx.textAlign = 'center';
+  const beatDur = 60/bpm;
+  for (let b=0;;b++) {
+    const t=b*beatDur; if(t>tMax+2) break;
+    const sx=playLineX+(t-curTime)*pxPerSec;
+    if(sx<pad.l-20||sx>W-pad.r+20) continue;
+    ctx.strokeStyle='rgba(100,100,255,0.06)';
+    ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(sx,pad.t); ctx.lineTo(sx,H-pad.b); ctx.stroke();
+  }
+
+  ctx.strokeStyle='rgba(0,212,255,0.4)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(playLineX,pad.t-4); ctx.lineTo(playLineX,H-pad.b); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const timeThreshold = 0.015;
+  const sortedNotes = notes.map((n,i)=>({...n,origIdx:i})).sort((a,b)=>a.time-b.time);
+  const timeGroups=[]; let currentGroup=[],lastTime=-999;
+  for(const n of sortedNotes){
+    if(currentGroup.length===0||Math.abs(n.time-lastTime)<timeThreshold){currentGroup.push(n);}
+    else{timeGroups.push(currentGroup);currentGroup=[n];}
+    lastTime=n.time;
+  }
+  if(currentGroup.length>0) timeGroups.push(currentGroup);
+
+  // Posição X de cada grupo: tempo relativo ao curTime * velocidade
+  // Notas futuras ficam à direita, passadas à esquerda da playLineX.
+  // Espaçamento mínimo aplicado apenas visualmente (não altera o tempo).
+  const groupX = timeGroups.map(grp => playLineX + (grp[0].time - curTime) * pxPerSec);
+  // Separar visualmente grupos que ficam sobrepostos (mantém ordem temporal)
+  for (let i = 1; i < groupX.length; i++) {
+    if (groupX[i] - groupX[i-1] < minGapPx) groupX[i] = groupX[i-1] + minGapPx;
+  }
+
+  for(let gIdx=0; gIdx<timeGroups.length; gIdx++){
+    const group = timeGroups[gIdx];
+    const n=group[0];
+    let sx=groupX[gIdx];
+    for(const note of group){
+      const visIdx=STR.length-1-note.string;
+      const y=startY+sSpace*visIdx;
+      if(sx<-40||sx>W+40) continue;
+      const g=glows.find(g=>g.idx===note.origIdx);
+      const gi=g?g.intensity:0;
+      if(gi>0.01){
+        const gr=ctx.createRadialGradient(sx,y,0,sx,y,35+gi*25);
+        gr.addColorStop(0,`rgba(0,212,255,${gi*0.6})`);
+        gr.addColorStop(0.4,`rgba(123,47,247,${gi*0.25})`);
+        gr.addColorStop(1,'rgba(0,212,255,0)');
+        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(sx,y,35+gi*25,0,Math.PI*2); ctx.fill();
+      }
+      const r=noteR+gi*4;
+      const ng=ctx.createRadialGradient(sx-2,y-2,0,sx,y,r);
+      ng.addColorStop(0,'#ffffff'); ng.addColorStop(0.5,SCOLS[note.string]);
+      ng.addColorStop(1,gi>0.3?'#00d4ff':SCOLS[note.string]);
+      ctx.fillStyle=ng; ctx.beginPath(); ctx.arc(sx,y,r,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=gi>0.3?'#00d4ff':SCOLS[note.string];
+      ctx.lineWidth=gi>0.3?3:2; ctx.stroke();
+      // Número maior e colorido — outline preto para contraste
+      const ftSize = Math.max(13, fretFontSize*1.6 + gi*4);
+      ctx.font=`900 ${ftSize}px Inter`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.strokeStyle='rgba(0,0,0,0.85)';
+      ctx.lineWidth=Math.max(2.5, ftSize*0.22);
+      ctx.strokeText(note.fret.toString(),sx,y);
+      // Cor: branco quando ativa, cor vibrante da corda quando inativa
+      ctx.fillStyle = gi>0.4 ? '#000' : (gi>0.1 ? '#fff' : SCOLS[note.string]);
+      ctx.shadowColor = SCOLS[note.string];
+      ctx.shadowBlur = gi>0.1 ? 10 : 4;
+      ctx.fillText(note.fret.toString(),sx,y);
+      ctx.shadowBlur=0;
+    }
+  }
+
+  if(notes.length===0){
+    ctx.fillStyle=isLight?'rgba(60,60,120,0.4)':'rgba(100,100,255,0.2)'; ctx.font='14px Inter';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('🎸 Nenhuma nota carregada',W/2,H/2-10);
+    ctx.font='11px Inter';
+    ctx.fillText('Importe MIDI ou use o botão "Criar"',W/2,H/2+15);
+  }
+}
+
+function draw() {
+  if (ghMode) drawGuitarHero();
+  else drawClassic();
+}
+
+// ================================================================
+// MOTOR DE ATUALIZAÇÃO
+// ================================================================
+function spawnHitParticles(x, y, col) {
+  const count = 14;
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+    const speed = 60 + Math.random() * 100;
+    ghParticles.push({
+      x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      r: 3 + Math.random() * 4, color: col, life: 1.0
+    });
+  }
+}
+
+function spawnHitText(x, y, text, color) {
+  ghHitAnims.push({ x, y, text, color, life: 1.0 });
+}
+
+const HIT_WORDS = ['PERFECT!', 'GREAT!', 'NICE!', 'GOOD!', 'ROCK!'];
+const HIT_COLORS = ['#ffd700', '#00ff88', '#00d4ff', '#ff6b6b', '#e040fb'];
+
+function update(dt) {
+  if (!playing || !notes.length) return;
+  const tMax = totalDur();
+  curTime += dt;
+
+  const W = canvas.width / devicePixelRatio;
+  const H = canvas.height / devicePixelRatio;
+  const HIT_ZONE_Y = H - 120;
+  const PAD_L = 20, PAD_R = 20;
+  const trackW = (W - PAD_L - PAD_R) / 6;
+
+  // Durante o lead-in (curTime < 0) não dispara notas nem contabiliza score
+  if (curTime < 0) { updateProgress(); return; }
+
+  while (curIdx < notes.length && notes[curIdx].time <= curTime) {
+    const n = notes[curIdx];
+    const sustainDur = noteSustainMap.get(curIdx) ?? 0.5;
+    const noteVol = noteVolMap.get(curIdx) ?? vol;
+    const isSustained = noteRoleMap.get(curIdx) ?? false;
+    playNote(fretMidi(n.string, n.fret), sustainDur, noteVol, isSustained);
+    glows.push({ idx: curIdx, intensity: 1.0 });
+
+    // Guitar Hero: score + partículas
+    if (ghMode) {
+      ghCombo++;
+      const pts = ghCombo > 20 ? 200 : ghCombo > 10 ? 150 : ghCombo > 4 ? 100 : 50;
+      ghScore += pts * Math.ceil(ghCombo / 10);
+      ghStreak = Math.min(ghStreak + 1, 10);
+
+      const cxHit = PAD_L + n.string * ((W - PAD_L - PAD_R) / 6) + (W - PAD_L - PAD_R) / 12;
+      spawnHitParticles(cxHit, HIT_ZONE_Y, GH_COLORS[n.string].glow);
+
+      // feedback de texto ocasional
+      if (ghCombo % 5 === 0 || ghCombo === 1) {
+        const wordIdx = Math.min(Math.floor(ghCombo / 5), HIT_WORDS.length - 1);
+        spawnHitText(cxHit, HIT_ZONE_Y - 30, HIT_WORDS[wordIdx], HIT_COLORS[wordIdx]);
+      }
+      updateGhHUD();
+    }
+    curIdx++;
+  }
+
+  // Atualiza partículas
+  for (let i = ghParticles.length - 1; i >= 0; i--) {
+    const p = ghParticles[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.vy += 200 * dt; // gravidade
+    p.life -= dt * 2;
+    if (p.life <= 0) ghParticles.splice(i, 1);
+  }
+
+  // Atualiza textos de hit
+  for (let i = ghHitAnims.length - 1; i >= 0; i--) {
+    ghHitAnims[i].life -= dt * 1.8;
+    if (ghHitAnims[i].life <= 0) ghHitAnims.splice(i, 1);
+  }
+
+  // Decai glows
+  for (let i = glows.length - 1; i >= 0; i--) {
+    glows[i].intensity = Math.max(0, glows[i].intensity - dt * 2.5);
+    if (glows[i].intensity <= 0) glows.splice(i, 1);
+  }
+
+  if (curIdx >= notes.length && curTime > tMax) {
+    if (looping) {
+      // Reinicia com lead-in para que as notas voltem de longe
+      const H2 = canvas.height / devicePixelRatio;
+      const HIT_ZONE_Y2 = H2 - 80;
+      const NOTE_SPEED2 = 200 * ghSpeed * spacing;
+      ghLeadIn = HIT_ZONE_Y2 / NOTE_SPEED2;
+      curTime = -ghLeadIn; curIdx = 0; glows = []; ghParticles = []; ghHitAnims = [];
+      ghCombo = 0; ghStreak = 0;
+    }
+    else { stopPlayback(); return; }
+  }
+  updateProgress();
+}
+
+function updateGhHUD() {
+  document.getElementById('hudScore').textContent = ghScore.toString().padStart(6, '0');
+  document.getElementById('hudCombo').textContent = `x${ghCombo} COMBO`;
+  const streak = document.getElementById('hudStreak');
+  let html = '';
+  for (let i = 0; i < 10; i++) html += `<div class="hud-dot${i < ghStreak ? ' lit' : ''}"></div>`;
+  streak.innerHTML = html;
+}
+
+// ================================================================
+// PRÉ-CÁLCULO DE SUSTAIN POR VOZ POLIFÔNICA
+// ================================================================
+// Mapa indexado por posição no array notes[] → { dur, vol }
+// Recalculado a cada play. Isso garante precisão independente do tamanho dos grupos.
+let noteSustainMap = new Map();
+let noteVolMap = new Map();
+let noteRoleMap = new Map(); // true = bass/soprano (sustain pleno), false = harmônica
+
+function computeSustainMap() {
+  noteSustainMap = new Map();
+  noteVolMap = new Map();
+  noteRoleMap = new Map();
+  if (!notes.length) return;
+
+  const TIME_THRESHOLD = 0.015;
+  const LAST_NOTE_DUR_GUITAR = 4.0;
+
+  // 1. Monta grupos de notas simultâneas ordenados por tempo
+  const groups = [];
+  let i = 0;
+  while (i < notes.length) {
+    const t = notes[i].time;
+    const group = [];
+    while (i < notes.length && Math.abs(notes[i].time - t) <= TIME_THRESHOLD) {
+      group.push({ noteIdx: i, midi: fretMidi(notes[i].string, notes[i].fret), time: t });
+      i++;
+    }
+    // Ordena por MIDI dentro do grupo: posição 0 = mais grave (baixo), último = mais agudo (soprano)
+    group.sort((a, b) => a.midi - b.midi);
+    groups.push({ time: t, entries: group });
+  }
+
+  // 2. Para cada nota: sustain legato — soa até exatamente antes da próxima nota,
+  //    mesmo que haja espaço em branco na edição.
+  for (let g = 0; g < groups.length; g++) {
+    const grp = groups[g];
+    const size = grp.entries.length;
+
+    // Intervalo até o próximo grupo de notas (legato: preenche o silêncio)
+    const nextGroupTime = g + 1 < groups.length ? groups[g + 1].time : null;
+    const intervalToNext = nextGroupTime !== null ? nextGroupTime - grp.time : LAST_NOTE_DUR_GUITAR;
+
+    // Legato: duration = intervalo completo até a próxima nota.
+    // O soundfont-player dispara o release APÓS "duration" segundos.
+    // Com release=0.02 (quase instantâneo), o som sustenta o intervalo todo
+    // e para com precisão milissegundos antes da próxima nota entrar.
+    const legatoDur = Math.max(intervalToNext, 0.15);
+
+    for (let vi = 0; vi < size; vi++) {
+      const entry = grp.entries[vi];
+      const isBass    = vi === 0;
+      const isSoprano = vi === size - 1;
+      const isHarmonic = !isBass && !isSoprano;
+
+      noteSustainMap.set(entry.noteIdx, legatoDur);
+      noteVolMap.set(entry.noteIdx, isHarmonic ? vol * 0.80 : vol);
+      noteRoleMap.set(entry.noteIdx, true); // todas usam envelope de sustain pleno
+    }
+  }
+}
+
+function loop(ts) {
+  const dt = Math.min((ts - lastTS) / 1000, 0.1);
+  lastTS = ts;
+  resize();
+  if (playing) update(dt);
+  draw();
+  animId = requestAnimationFrame(loop);
+}
+
+function updateProgress() {
+  const tMax = totalDur();
+  const pct = tMax > 0 ? Math.max(0, curTime) / tMax * 100 : 0;
+  document.getElementById('progFill').style.width = pct + '%';
+  const dispTime = Math.max(0, curTime);
+  const cm = Math.floor(dispTime / 60), cs = Math.floor(dispTime % 60);
+  document.getElementById('curTime').textContent = `${cm}:${cs.toString().padStart(2, '0')}`;
+  const tm = Math.floor(tMax / 60), ts2 = Math.floor(tMax % 60);
+  document.getElementById('totTime').textContent = `${tm}:${ts2.toString().padStart(2, '0')}`;
+}
+
+// ================================================================
+// TOGGLE DE MODO
+// ================================================================
+function toggleViewMode() {
+  ghMode = !ghMode;
+  const btn = document.getElementById('modeBtn');
+  btn.textContent = ghMode ? '🎮 GH Mode' : '📄 Tab Mode';
+  btn.classList.toggle('active', ghMode);
+  // HUD de pontuação permanece oculto em ambos os modos
+  document.getElementById('ghHUD').classList.remove('visible');
+  if (!ghMode) { ghScore = 0; ghCombo = 0; ghStreak = 0; updateGhHUD(); }
+  showToast(ghMode ? '🎮 Modo Guitar Hero!' : '📄 Modo Tablatura');
+}
+
+function setGhSpeed(v) {
+  ghSpeed = parseFloat(v);
+  document.getElementById('ghSpeedD').textContent = ghSpeed.toFixed(1) + 'x';
+}
+function setGhPersp(v) {
+  ghPerspective = v == '1';
+  document.getElementById('ghPerspD').textContent = ghPerspective ? 'On' : 'Off';
+}
+
+// ================================================================
+// CONTROLES DE TRANSPORTE
+// ================================================================
+function togglePlay() {
+  if (!notes.length) { showToast('Carregue uma música primeiro!'); return; }
+  initSfAudio();
+  computeSustainMap(); // pré-calcula sustain por voz polifônica
+
+  if (playing) {
+    // pausar
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶';
+    return;
+  }
+
+  // Reiniciar se chegou ao fim
+  if (curTime >= totalDur()) {
+    curTime = 0; curIdx = 0; glows = []; ghParticles = []; ghHitAnims = [];
+    ghCombo = 0; ghStreak = 0; ghScore = 0; updateGhHUD();
+  }
+
+  // Se ainda não iniciou (curTime == 0), faz lead-in com contagem regressiva
+  // Calcula AHEAD_SEC igual ao drawGuitarHero: HIT_ZONE_Y / NOTE_SPEED
+  if (curTime <= 0) {
+    const H = canvas.height / devicePixelRatio;
+    const HIT_ZONE_Y = H - 120;
+    const NOTE_SPEED = 200 * ghSpeed * spacing;
+    ghLeadIn = HIT_ZONE_Y / NOTE_SPEED;  // ex: ~1.8s a 200px/s
+    curTime = -ghLeadIn;                  // começa negativo, notas nascem lá em cima
+    curIdx = 0;
+  }
+
+  playing = true;
+  document.getElementById('playBtn').textContent = '⏸';
+}
+function stopPlayback() {
+  playing = false; curTime = 0; curIdx = 0; glows = []; ghParticles = []; ghHitAnims = [];
+  ghLeadIn = 0;
+  document.getElementById('playBtn').textContent = '▶';
+  updateProgress();
+}
+function toggleLoop() {
+  looping = !looping;
+  document.getElementById('loopBtn').classList.toggle('active', looping);
+}
+function setBPM(v) { v = parseInt(v); if (isNaN(v)) v = 120; if (v < 30) v = 30; if (v > 300) v = 300; bpm = v; document.getElementById('bpmInput').value = v; }
+function adjustBPM(d) { setBPM(bpm + d); }
+function setVol(v) { vol = +v / 100; document.getElementById('volD').textContent = v + '%'; }
+function setDecay(v) { decayFactor = v / 100; document.getElementById('decayD').textContent = v + '%'; }
+function setSpacing(v) { spacing = v / 100; document.getElementById('spcD').textContent = v + '%'; }
+
+function setInst(i, el) {
+  inst = i;
+  // Sync sidebar buttons
+  document.querySelectorAll('.sidebar .inst-btn').forEach(b => b.classList.remove('active'));
+  const sidebarBtn = document.getElementById('instBtn_' + i);
+  if (sidebarBtn) sidebarBtn.classList.add('active');
+  // Sync transport bar buttons
+  document.querySelectorAll('.inst-select-wrap .inst-opt, .tb-grp-inst .inst-opt').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${i}'`)) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+  // Sync settings modal buttons
+  document.querySelectorAll('.settings-inst-btn').forEach(b => b.classList.remove('active'));
+  const sBtn = document.getElementById('sInstBtn_' + i);
+  if (sBtn) sBtn.classList.add('active');
+  loadInstrument(i);
+}
+
+function setInstFromSettings(i) {
+  setInst(i, null);
+}
+
+// ── Settings modal ──
+function openSettings() {
+  // Sync all values to modal sliders
+  document.getElementById('sGhSpeed').value = ghSpeed;
+  document.getElementById('sGhSpeedVal').textContent = parseFloat(ghSpeed).toFixed(1) + 'x';
+  document.getElementById('sGhPersp').value = ghPerspective ? 1 : 0;
+  document.getElementById('sGhPerspVal').textContent = ghPerspective ? 'On' : 'Off';
+  document.getElementById('sVol').value = Math.round(vol * 100);
+  document.getElementById('sVolVal').textContent = Math.round(vol * 100) + '%';
+  document.getElementById('sDecay').value = Math.round(decayFactor * 100);
+  document.getElementById('sDecayVal').textContent = Math.round(decayFactor * 100) + '%';
+  document.getElementById('sSpc').value = Math.round(spacing * 100);
+  document.getElementById('sSpcVal').textContent = Math.round(spacing * 100) + '%';
+  // Sync instrument
+  document.querySelectorAll('.settings-inst-btn').forEach(b => b.classList.remove('active'));
+  const sBtn = document.getElementById('sInstBtn_' + inst);
+  if (sBtn) sBtn.classList.add('active');
+  // Sync theme button
+  const sThemeBtn = document.getElementById('sThemeBtn');
+  if (sThemeBtn) sThemeBtn.textContent = globalIsDark ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+function closeSettingsOutside(e) {
+  if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+}
+
+// Settings slider handlers — sync back to main state and existing sidebar sliders
+function setGhSpeedS(v) {
+  v = parseFloat(v);
+  ghSpeed = v;
+  document.getElementById('sGhSpeedVal').textContent = v.toFixed(1) + 'x';
+  const s = document.getElementById('ghSpeedS'); if(s) { s.value = v; }
+  const d = document.getElementById('ghSpeedD'); if(d) d.textContent = v + 'x';
+}
+function setGhPerspS(v) {
+  ghPerspective = parseInt(v) === 1;
+  document.getElementById('sGhPerspVal').textContent = ghPerspective ? 'On' : 'Off';
+  const s = document.getElementById('ghPerspS'); if(s) s.value = v;
+  const d = document.getElementById('ghPerspD'); if(d) d.textContent = ghPerspective ? 'On' : 'Off';
+}
+function setVolS(v) {
+  vol = parseInt(v) / 100;
+  document.getElementById('sVolVal').textContent = v + '%';
+  const s = document.getElementById('volS'); if(s) s.value = v;
+  const d = document.getElementById('volD'); if(d) d.textContent = v + '%';
+}
+function setDecayS(v) {
+  decayFactor = parseInt(v) / 100;
+  document.getElementById('sDecayVal').textContent = v + '%';
+  const s = document.getElementById('decayS'); if(s) s.value = v;
+  const d = document.getElementById('decayD'); if(d) d.textContent = v + '%';
+}
+function setSpcS(v) {
+  spacing = parseInt(v) / 100;
+  document.getElementById('sSpcVal').textContent = v + '%';
+  const s = document.getElementById('spcS'); if(s) s.value = v;
+  const d = document.getElementById('spcD'); if(d) d.textContent = v + '%';
+}
+
+function seekTo(e) {
+  const r = document.getElementById('progBg').getBoundingClientRect();
+  const ratio = (e.clientX - r.left) / r.width, tMax = totalDur();
+  curTime = ratio * tMax; curIdx = 0;
+  for (let i = 0; i < notes.length; i++) { if (notes[i].time <= curTime) curIdx = i; }
+  curIdx = Math.max(0, curIdx); glows = [];
+  updateProgress();
+}
+
+function toggleSidebar() {
+  if (isMobile) { document.getElementById('sidebar').classList.toggle('mobile-open'); }
+  else {
+    const sb = document.getElementById('sidebar'), tb = document.getElementById('sidebarToggle');
+    sidebarOpen = !sidebarOpen;
+    if (sidebarOpen) { sb.classList.remove('collapsed'); tb.classList.remove('hide'); tb.classList.add('show'); }
+    else { sb.classList.add('collapsed'); tb.classList.remove('show'); tb.classList.add('hide'); }
+    setTimeout(resize, 310);
+  }
+}
+function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('mobile-open'); }
+
+// ================================================================
+// TEMA GLOBAL — claro / escuro
+// ================================================================
+let globalIsDark = true;
+
+function toggleGlobalTheme() {
+  globalIsDark = !globalIsDark;
+  applyGlobalTheme();
+  try { localStorage.setItem('tabbounce_theme', globalIsDark ? 'dark' : 'light'); } catch(e) {}
+}
+
+function applyGlobalTheme() {
+  document.body.classList.toggle('light', !globalIsDark);
+  const btn = document.getElementById('globalThemeBtn');
+  if (btn) btn.textContent = globalIsDark ? '🌙' : '☀️';
+  const sBtn = document.getElementById('sThemeBtn');
+  if (sBtn) sBtn.textContent = globalIsDark ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+}
+
+// Restaurar tema salvo
+(function() {
+  try {
+    const saved = localStorage.getItem('tabbounce_theme');
+    if (saved === 'light') { globalIsDark = false; document.body.classList.add('light'); }
+  } catch(e) {}
+})();
+
+// ================================================================
+// EDITOR DE TABLATURA
+// ================================================================
+let tabPages = [], currentPage = 0, cursorPos = 0, tabZoom = 100;
+let tabHistory = [], tabHistoryIdx = -1;
+const STR_NAMES_REV = ['e','B','G','D','A','E'];
+const STR_MIDI = [64,59,55,50,45,40];
+
+// Colunas por página adaptativas ao tamanho da tela
+function getMaxCols() {
+  const w = window.innerWidth;
+  if (w < 400) return 12;
+  if (w < 600) return 16;
+  if (w < 900) return 20;
+  return 22;
+}
+let MAX_COLS_PER_PAGE = getMaxCols();
+window.addEventListener('resize', () => { MAX_COLS_PER_PAGE = getMaxCols(); });
+
+function createEmptyPage() { return Array.from({ length: MAX_COLS_PER_PAGE }, () => Array(6).fill(null)); }
+
+function openCreate() {
+  document.getElementById('createPage').classList.add('active');
+  if (tabPages.length === 0) { tabPages = [createEmptyPage()]; currentPage = 0; cursorPos = 0; tabZoom = 100; saveHistory(); }
+  renderTab(); renderFretboard(); updateZoom();
+}
+function closeCreate() { document.getElementById('createPage').classList.remove('active'); }
+
+function saveHistory() {
+  tabHistory = tabHistory.slice(0, tabHistoryIdx + 1);
+  tabHistory.push({ pages: JSON.parse(JSON.stringify(tabPages)), page: currentPage, pos: cursorPos, zoom: tabZoom });
+  tabHistoryIdx = tabHistory.length - 1;
+  if (tabHistory.length > 50) { tabHistory.shift(); tabHistoryIdx--; }
+}
+function undoAction() { if (tabHistoryIdx > 0) { tabHistoryIdx--; const h = tabHistory[tabHistoryIdx]; tabPages = h.pages; currentPage = h.page; cursorPos = h.pos; tabZoom = h.zoom; renderTab(); updateZoom(); } }
+function redoAction() { if (tabHistoryIdx < tabHistory.length - 1) { tabHistoryIdx++; const h = tabHistory[tabHistoryIdx]; tabPages = h.pages; currentPage = h.page; cursorPos = h.pos; tabZoom = h.zoom; renderTab(); updateZoom(); } }
+function clearTabEditor() { tabPages = [createEmptyPage()]; currentPage = 0; cursorPos = 0; tabZoom = 100; saveHistory(); renderTab(); updateZoom(); clearFretHighlight(); }
+function addSection() { tabPages.push(createEmptyPage()); currentPage = tabPages.length - 1; cursorPos = 0; saveHistory(); renderTab(); }
+
+function navCursor(dir) {
+  cursorPos += dir;
+  if (cursorPos < 0) { if (currentPage > 0) { currentPage--; cursorPos = MAX_COLS_PER_PAGE - 1; } else cursorPos = 0; }
+  else if (cursorPos >= MAX_COLS_PER_PAGE) { if (currentPage < tabPages.length - 1) { currentPage++; cursorPos = 0; } else cursorPos = MAX_COLS_PER_PAGE - 1; }
+  saveHistory(); renderTab();
+  setTimeout(() => { const pageEl = document.querySelectorAll('.tab-page')[currentPage]; if (pageEl) pageEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+}
+
+function deleteColumn() {
+  let hasNotes = false;
+  for (let s = 0; s < 6; s++) { if (tabPages[currentPage][cursorPos][s] !== null) { hasNotes = true; break; } }
+  if (!hasNotes) { showToast('Nenhuma nota nesta posição'); return; }
+  for (let s = 0; s < 6; s++) tabPages[currentPage][cursorPos][s] = null;
+  saveHistory(); renderTab(); showToast('🗑️ Coluna apagada');
+}
+
+function zoomTab(delta) { tabZoom = Math.max(50, Math.min(200, tabZoom + delta)); updateZoom(); saveHistory(); }
+function updateZoom() {
+  const container = document.getElementById('tabDisplayContainer');
+  container.style.transform = `scale(${tabZoom / 100})`; container.style.transformOrigin = 'top left';
+  document.getElementById('zoomLevel').textContent = tabZoom + '%';
+}
+
+function getTotalNotes() { let c = 0; tabPages.forEach(p => p.forEach(row => row.forEach(f => { if (f !== null) c++; }))); return c; }
+
+function renderTab() {
+  const container = document.getElementById('tabDisplayContainer'); let html = '';
+  for (let pi = 0; pi < tabPages.length; pi++) {
+    const page = tabPages[pi], isCurrentPage = pi === currentPage;
+    html += `<div class="tab-page" style="margin-bottom:${pi < tabPages.length - 1 ? '16px' : '0'};">`;
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">`;
+    html += `<span style="font-size:11px;color:#666;font-weight:600;">Página ${pi + 1}${isCurrentPage ? ' (atual)' : ''}</span>`;
+    if (pi > 0) html += `<button class="insert-btn" onclick="removePage(${pi})" style="font-size:9px;padding:2px 6px;">✕ Remover</button>`;
+    html += `</div>`;
+    html += `<div class="tab-display"><div class="tab-display-inner">`;
+    html += `<div class="tab-string-row" style="height:16px;"><div class="tab-string-label"></div><div class="tab-string-line">`;
+    for (let pos = 0; pos < MAX_COLS_PER_PAGE; pos++) {
+      const globalPos = pi * MAX_COLS_PER_PAGE + pos;
+      html += `<div class="tab-cell" style="font-size:8px;color:#bbb;justify-content:flex-start;padding-left:2px;">${pos % 4 === 0 ? globalPos : ''}</div>`;
+    }
+    html += `</div></div>`;
+    for (let vi = 0; vi < 6; vi++) {
+      html += `<div class="tab-string-row"><div class="tab-string-label">${STR_NAMES_REV[vi]}</div><div class="tab-string-line"><div class="tab-string-dash"></div>`;
+      for (let pos = 0; pos < MAX_COLS_PER_PAGE; pos++) {
+        const fret = page[pos][vi], isCursor = isCurrentPage && pos === cursorPos;
+        const cls = fret !== null ? 'active' : '', curCls = isCursor ? 'cursor' : '';
+        html += `<div class="tab-cell ${cls} ${curCls}" onclick="tabCellClick(${pi},${pos},${vi})" oncontextmenu="tabCellRightClick(event,${pi},${pos},${vi})">${fret !== null ? fret : ''}</div>`;
+      }
+      html += `</div></div>`;
+    }
+    html += `</div></div></div>`;
+  }
+  container.innerHTML = html;
+  document.getElementById('tabInfo').textContent = `${getTotalNotes()} notas | Posição: ${currentPage * MAX_COLS_PER_PAGE + cursorPos} | Página: ${currentPage + 1}/${tabPages.length}`;
+}
+
+function removePage(pi) { if (tabPages.length <= 1) { showToast('Mínimo 1 página!'); return; } tabPages.splice(pi, 1); if (currentPage >= tabPages.length) currentPage = tabPages.length - 1; saveHistory(); renderTab(); }
+function tabCellClick(pi, pos, vi) { currentPage = pi; cursorPos = pos; if (tabPages[pi][pos][vi] !== null) tabPages[pi][pos][vi] = null; saveHistory(); renderTab(); }
+function tabCellRightClick(e, pi, pos, vi) { e.preventDefault(); if (tabPages[pi][pos][vi] !== null) { tabPages[pi][pos][vi] = null; saveHistory(); renderTab(); } }
+
+function fbCellClick(vi, fret, el) {
+  document.querySelectorAll('.fb-cell.highlight').forEach(c => c.classList.remove('highlight'));
+  el.classList.add('highlight');
+  if (cursorPos < MAX_COLS_PER_PAGE) {
+    tabPages[currentPage][cursorPos][vi] = fret; cursorPos++;
+    if (cursorPos >= MAX_COLS_PER_PAGE) {
+      if (currentPage < tabPages.length - 1) currentPage++;
+      else { tabPages.push(createEmptyPage()); currentPage++; }
+      cursorPos = 0;
+    }
+    saveHistory(); renderTab();
+    const midi = STR_MIDI[vi] + fret;
+    playNote(midi, 0.5, vol * 0.6);
+    const pageEl = document.querySelectorAll('.tab-page')[currentPage];
+    if (pageEl) pageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+function clearFretHighlight() { document.querySelectorAll('.fb-cell.highlight').forEach(c => c.classList.remove('highlight')); }
+
+function renderFretboard() {
+  const grid = document.getElementById('fretboardGrid'); let html = '';
+  html += '<div class="fretboard-label" style="background:transparent;"></div>';
+  for (let f = 0; f <= 24; f++) html += `<div class="fret-num-header">${f}</div>`;
+  for (let vi = 0; vi < 6; vi++) {
+    const on = STR_MIDI[vi]; html += `<div class="fretboard-label">${midiToName(on)}</div>`;
+    for (let f = 0; f <= 24; f++) {
+      const midi = on + f, nn = midiToName(midi), sharp = nn.includes('#');
+      html += `<div class="fb-cell ${sharp ? 'string-sharp' : 'string-natural'} ${f === 0 ? 'open' : ''}" onclick="fbCellClick(${vi},${f},this)" title="${nn}">${nn}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+function tabToNotesArray() {
+  const cn = [], bd = 60/bpm, slotDur = bd * 0.5;
+  for (let pi = 0; pi < tabPages.length; pi++) {
+    for (let pos = 0; pos < MAX_COLS_PER_PAGE; pos++) {
+      let hasNote = false;
+      for (let vi = 0; vi < 6; vi++) { if (tabPages[pi][pos][vi] !== null) hasNote = true; }
+      if (!hasNote) continue;
+      for (let vi = 0; vi < 6; vi++) {
+        if (tabPages[pi][pos][vi] !== null) {
+          const si = 5 - vi, globalPos = pi * MAX_COLS_PER_PAGE + pos;
+          cn.push({ string: si, fret: tabPages[pi][pos][vi], time: globalPos * slotDur, dur: slotDur * 1.5 });
+        }
+      }
+    }
+  }
+  cn.sort((a, b) => { if (Math.abs(a.time - b.time) < 0.001) return a.string - b.string; return a.time - b.time; });
+  return cn;
+}
+
+function playTab() {
+  if (getTotalNotes() === 0) { showToast('Adicione notas!'); return; }
+  const cn = tabToNotesArray();
+  if (!cn.length) { showToast('Adicione notas!'); return; }
+  notes = cn; stopPlayback(); closeCreate();
+  playing = true; document.getElementById('playBtn').textContent = '⏸';
+  updateProgress(); showToast('▶ Tocando...');
+}
+
+function loadTabToMain() {
+  if (getTotalNotes() === 0) { showToast('Adicione notas!'); return; }
+  notes = tabToNotesArray(); stopPlayback(); curTime = 0; curIdx = 0; glows = [];
+  closeCreate(); updateProgress(); showToast(`🎵 ${notes.length} notas carregadas! ▶`);
+}
+
+// ================================================================
+// TECLADO
+// ================================================================
+document.addEventListener('keydown', function (e) {
+  const cp = document.getElementById('createPage');
+  if (cp.classList.contains('active')) {
+    if (e.code === 'ArrowLeft') { e.preventDefault(); navCursor(-1); }
+    else if (e.code === 'ArrowRight') { e.preventDefault(); navCursor(1); }
+    else if (e.code === 'ArrowUp') { e.preventDefault(); if (currentPage > 0) { currentPage--; renderTab(); } }
+    else if (e.code === 'ArrowDown') { e.preventDefault(); if (currentPage < tabPages.length - 1) { currentPage++; renderTab(); } }
+    else if (e.code === 'Delete' || e.code === 'Backspace') { if (document.activeElement.tagName !== 'INPUT') { e.preventDefault(); deleteColumn(); } }
+    else if (e.code === 'KeyN') { e.preventDefault(); addSection(); }
+    return;
+  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  else if (e.code === 'KeyM') { e.preventDefault(); toggleViewMode(); }
+  else if (e.code === 'Escape') { stopPlayback(); closeEditor(); closeCreate(); closeSaveModal(); closeLoadModal(); if (isMobile) document.getElementById('sidebar').classList.remove('mobile-open'); }
+});
+
+// ================================================================
+// IMPORTAÇÃO MIDI
+// ================================================================
+document.getElementById('midiFileInput').addEventListener('change', function (e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    try { parseMIDI(new Uint8Array(ev.target.result)); showToast(`MIDI: ${notes.length} notas`); }
+    catch (err) { console.error(err); showToast('Erro ao importar MIDI.'); }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function parseMIDI(data) {
+  stopPlayback(); notes = []; curTime = 0; curIdx = 0; glows = []; ghScore = 0; ghCombo = 0; ghStreak = 0;
+  let p = 0;
+  const r8 = () => data[p++];
+  const rVL = () => { let v = 0, b; do { b = r8(); v = (v << 7) | (b & 0x7F); } while (b & 0x80); return v; };
+  if (String.fromCharCode(data[0],data[1],data[2],data[3]) !== 'MThd') throw new Error('Not MIDI');
+  p += 8; r8(); r8(); const nT = (r8()<<8)|r8(), div = (r8()<<8)|r8(); const tpb = (div & 0x8000) ? 480 : div;
+  let tempo = 500000; const evs = [];
+  for (let t = 0; t < nT; t++) {
+    let found = false;
+    for (let s = 0; s < 20; s++) {
+      if (p + 4 >= data.length) break;
+      if (String.fromCharCode(data[p],data[p+1],data[p+2],data[p+3]) === 'MTrk') { found = true; break; }
+      p += 4; p += (r8()<<24)|(r8()<<16)|(r8()<<8)|r8();
+    }
+    if (!found) break; p += 4;
+    const tL = (r8()<<24)|(r8()<<16)|(r8()<<8)|r8(); const tE = p + tL; let aT = 0, rS = 0;
+    while (p < tE) {
+      const d = rVL(); aT += d; let sb = data[p];
+      if (sb < 0x80) { sb = rS; } else { rS = sb; p++; }
+      const cmd = sb >> 4;
+      if (cmd === 0x9) {
+        const note = r8(), vel = r8();
+        if (vel > 0) {
+          let bs = 0, bf = 99;
+          for (let s = 0; s < STR.length; s++) { const f = note - STR[s]; if (f >= 0 && f <= 20 && f < bf) { bs = s; bf = f; } }
+          bf = Math.max(0, Math.min(20, bf));
+          evs.push({ time: (aT / tpb) * (tempo / 1000000), string: bs, fret: bf });
+        }
+      }
+      else if (cmd===0x8||cmd===0xA||cmd===0xB||cmd===0xE) { r8(); r8(); }
+      else if (cmd===0xC||cmd===0xD) { r8(); }
+      else if (sb === 0xFF) {
+        const mt = r8(), ml = rVL();
+        if (mt===0x51&&ml===3) tempo=(data[p]<<16)|(data[p+1]<<8)|data[p+2];
+        p += ml;
+      }
+      else if (sb===0xF0||sb===0xF7) { const sl=rVL(); p+=sl; }
+    }
+    p = tE;
+  }
+  if (!evs.length) { showToast('Nenhuma nota no MIDI.'); return; }
+  const tBPM = 60000000/tempo;
+  evs.sort((a,b) => a.time - b.time);
+  evs.forEach(ev => notes.push({ string: ev.string, fret: ev.fret, time: ev.time, dur: 0.5 }));
+  notes.sort((a,b) => a.time - b.time);
+  const u = [];
+  for (let i = 0; i < notes.length; i++) {
+    if (i > 0 && notes[i].time - notes[i-1].time < 0.02 && notes[i].string === notes[i-1].string) continue;
+    u.push(notes[i]);
+  }
+  notes = u; updateProgress(); updateGhHUD();
+}
+
+// ================================================================
+// EXPORTAÇÃO MIDI
+// ================================================================
+function exportMIDI() {
+  if (!notes.length) { showToast('Nenhuma nota!'); return; }
+  const td = [], bpd = 60/bpm, mpb = Math.round(60000000/bpm);
+  // delta-time 0 BEFORE the tempo meta-event (required by MIDI spec)
+  td.push(0x00, 0xFF,0x51,0x03,(mpb>>16)&0xFF,(mpb>>8)&0xFF,mpb&0xFF);
+  let lt = 0; const tpb = 480;
+  notes.forEach(n => {
+    const midi = fretMidi(n.string, n.fret), t = Math.round(n.time/bpd*tpb), d = t - lt;
+    lt = t; td.push(...encVL(d)); td.push(0x90, midi, 100);
+    const od = Math.round(0.4/bpd*tpb); td.push(...encVL(od)); td.push(0x80, midi, 0);
+  });
+  td.push(0x00,0xFF,0x2F,0x00);
+  // Header: MThd, length=6, format=0, nTracks=1, division=tpb (big-endian)
+  const hdr = [0x4D,0x54,0x68,0x64,0,0,0,6,0,0,0,1,(tpb>>8)&0xFF,tpb&0xFF];
+  const tc = [0x4D,0x54,0x72,0x6B,(td.length>>24)&0xFF,(td.length>>16)&0xFF,(td.length>>8)&0xFF,td.length&0xFF,...td];
+  const d = new Uint8Array([...hdr,...tc]);
+  const b = new Blob([d],{type:'audio/midi'});
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a'); a.href=u; a.download='tabbounce.mid'; a.click();
+  URL.revokeObjectURL(u); showToast('MIDI exportado!');
+}
+function encVL(v) {
+  if (v===0) return [0]; const b=[]; let val=v;
+  while(val>0){b.push(val&0x7F);val>>=7;} b.reverse();
+  for(let i=0;i<b.length-1;i++) b[i]|=0x80; return b;
+}
+
+// ================================================================
+// SAVE/LOAD
+// ================================================================
+function getSavedTabs() { try { return JSON.parse(localStorage.getItem('tabbounce_saves') || '{}'); } catch (e) { return {}; } }
+function setSavedTabs(tabs) { localStorage.setItem('tabbounce_saves', JSON.stringify(tabs)); }
+
+function openSaveModal() {
+  document.getElementById('saveNameInput').value = '';
+  document.getElementById('saveModal').classList.add('active');
+  setTimeout(() => document.getElementById('saveNameInput').focus(), 100);
+}
+function closeSaveModal() { document.getElementById('saveModal').classList.remove('active'); }
+function saveTab() {
+  const name = document.getElementById('saveNameInput').value.trim();
+  if (!name) { showToast('Digite um nome!'); return; }
+  const tabs = getSavedTabs();
+  tabs[name] = { pages: tabPages, currentPage, cursorPos, zoom: tabZoom, date: new Date().toLocaleString('pt-BR') };
+  setSavedTabs(tabs); closeSaveModal(); showToast(`💾 "${name}" salvo!`);
+}
+function openLoadModal() { renderSavedTabsList(); document.getElementById('loadModal').classList.add('active'); }
+function closeLoadModal() { document.getElementById('loadModal').classList.remove('active'); }
+function renderSavedTabsList() {
+  const tabs = getSavedTabs(), list = document.getElementById('savedTabsList'), names = Object.keys(tabs);
+  if (names.length === 0) { list.innerHTML = '<p style="text-align:center;color:#666;font-size:12px;padding:20px;">Nenhuma tablatura salva</p>'; return; }
+  list.innerHTML = names.map(name => {
+    const t = tabs[name]; let nc = 0;
+    t.pages.forEach(p => p.forEach(row => row.forEach(f => { if (f !== null) nc++; })));
+    return `<div class="saved-tab-item"><div style="flex:1;"><div class="st-name">${name}</div><div class="st-date">${t.date||'--'} | ${nc} notas</div></div><div class="st-actions"><button class="st-load" onclick="loadSavedTab('${name.replace(/'/g,"\\'")}')">📂</button><button class="st-del" onclick="deleteSavedTab('${name.replace(/'/g,"\\'")}')">🗑️</button></div></div>`;
+  }).join('');
+}
+function loadSavedTab(name) {
+  const tabs = getSavedTabs(); if (!tabs[name]) { showToast('Tablatura não encontrada!'); return; }
+  const t = tabs[name]; tabPages = t.pages; currentPage = t.currentPage||0; cursorPos = t.cursorPos||0; tabZoom = t.zoom||100;
+  saveHistory(); renderTab(); updateZoom(); closeLoadModal(); showToast(`📂 "${name}" carregado!`);
+}
+function deleteSavedTab(name) {
+  if (!confirm(`Excluir "${name}"?`)) return;
+  const tabs = getSavedTabs(); delete tabs[name]; setSavedTabs(tabs); renderSavedTabsList(); showToast(`🗑️ "${name}" excluído`);
+}
+
+function showEditor() {
+  if (!notes.length) { showToast('Carregue notas!'); return; }
+  document.getElementById('noteList').innerHTML = notes.map((n,i) =>
+    `<div class="nli"><div class="ni"><strong>#${i+1}</strong> - ${SNAMES[n.string]} Casa ${n.fret}</div><div><button class="bd" onclick="delN(${i})">🗑️</button></div></div>`
+  ).join('');
+  document.getElementById('edModal').classList.add('active');
+}
+function closeEditor() { document.getElementById('edModal').classList.remove('active'); }
+function delN(i) { notes.splice(i,1); showEditor(); }
+function clearAllNotes() {
+  if (notes.length && confirm('Limpar todas as notas?')) {
+    stopPlayback(); notes=[]; curTime=0; curIdx=0; glows=[]; ghParticles=[]; ghHitAnims=[];
+    ghScore=0; ghCombo=0; ghStreak=0; updateGhHUD(); updateProgress(); showToast('Notas removidas.');
+  }
+}
+
+function showToast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// PWA: retoma AudioContext ao voltar ao foco (aba/app)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && sfAudioContext && sfAudioContext.state === 'suspended') {
+    sfAudioContext.resume();
+  }
+});
+
+// ================================================================
+// INICIALIZAÇÃO
+// ================================================================
+updateProgress();
+updateGhHUD();
+requestAnimationFrame(loop);
+
+window.addEventListener('click', function initOnClick() {
+  loadInstrument('nylon');
+  window.removeEventListener('click', initOnClick);
+}, { once: true });
+
+setTimeout(() => { try { loadInstrument('nylon'); } catch (e) { } }, 500);
+
+showToast('🎮 Guitar Hero Mode ativo! Clique para ativar áudio ▶  |  M = alternar modo');
+</script>
+</body>
+</html>
