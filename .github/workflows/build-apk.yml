@@ -1,0 +1,124 @@
+name: Gerar APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Montar pasta www
+        run: |
+          rm -rf www && mkdir www
+          for f in *.html *.js *.json *.png *.svg *.css *.webp *.jpg *.ico *.mid *.midi; do
+            [ -f "$f" ] || continue
+            case "$f" in package.json|package-lock.json|capacitor.config.json) continue;; esac
+            cp "$f" www/
+          done
+          cat > www/native-bridge.js <<'BRIDGE'
+          (function () {
+            var C = window.Capacitor;
+            if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
+            var origClick = HTMLAnchorElement.prototype.click;
+            function toBase64(blob) {
+              return new Promise(function (ok, err) {
+                var r = new FileReader();
+                r.onload = function () { ok(String(r.result).split(',')[1]); };
+                r.onerror = err;
+                r.readAsDataURL(blob);
+              });
+            }
+            async function salvarECompartilhar(a) {
+              var nome = (a.download || 'arquivo').replace(/[\\/:*?"<>|]+/g, '_');
+              try {
+                var P = C.Plugins || {};
+                var blob = await (await fetch(a.href)).blob();
+                var dados = await toBase64(blob);
+                var w = await P.Filesystem.writeFile({ path: nome, data: dados, directory: 'CACHE' });
+                await P.Share.share({ title: nome, files: [w.uri], dialogTitle: 'Salvar ou compartilhar' });
+              } catch (e) {
+                var msg = String((e && e.message) || e);
+                if (/cancel/i.test(msg)) return;
+                alert('Não foi possível salvar o arquivo: ' + msg);
+              }
+            }
+            HTMLAnchorElement.prototype.click = function () {
+              if (this.download && /^blob:/.test(this.href)) { salvarECompartilhar(this); return; }
+              return origClick.apply(this, arguments);
+            };
+          })();
+          BRIDGE
+          sed -i '0,/<head[^>]*>/s//&\n<script src="native-bridge.js"><\/script>/' www/index.html
+          grep -c 'native-bridge.js' www/index.html
+          ls www
+
+      - name: Criar projeto Android
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Ícone do app
+        run: |
+          R=android/app/src/main/res
+          rm -rf $R/mipmap-anydpi-v26
+          for pair in mdpi:96 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            d=${pair%%:*}; s=${pair##*:}
+            cp icon-${s}x${s}.png $R/mipmap-$d/ic_launcher.png
+            cp icon-${s}x${s}.png $R/mipmap-$d/ic_launcher_round.png
+            cp icon-${s}x${s}.png $R/mipmap-$d/ic_launcher_foreground.png
+          done
+
+      - name: Versão do app
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: Compilar (release)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Assinar
+        env:
+          KS_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          IN=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          $BT/zipalign -p -f 4 $IN aligned.apk
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > release.keystore
+            export KS_PASS KS_ALIAS
+            $BT/apksigner sign --ks release.keystore --ks-key-alias "$KS_ALIAS" \
+              --ks-pass env:KS_PASS --key-pass env:KS_PASS \
+              --out cordas-de-ouro.apk aligned.apk
+            echo "APK assinado com a SUA chave."
+          else
+            keytool -genkeypair -keystore teste.keystore -alias teste -keyalg RSA -keysize 2048 \
+              -validity 10000 -storepass android -keypass android -dname "CN=Teste"
+            $BT/apksigner sign --ks teste.keystore --ks-key-alias teste \
+              --ks-pass pass:android --key-pass pass:android \
+              --out cordas-de-ouro.apk aligned.apk
+            echo "ATENÇÃO: APK assinado com chave de TESTE. Não publique este."
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cordas-de-ouro-apk
+          path: cordas-de-ouro.apk
