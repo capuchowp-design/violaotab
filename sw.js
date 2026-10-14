@@ -1,5 +1,5 @@
 // Cordas de Ouro CCB — Service Worker v3.0
-const CACHE_NAME = 'cordas-ouro-ccb-v3';
+const CACHE_NAME = 'cordas-ouro-ccb-v4';
 const ASSETS = [
   './',
   './index.html',

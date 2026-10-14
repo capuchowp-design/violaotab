@@ -608,6 +608,14 @@ body.light .toast{color:#2563eb;border-color:rgba(37,99,235,0.3);}
   .bpm-input{width:22px;}
   .tb-grp-prog{display:none;}
 }
+
+/* Celular em pé: o nome do app fica numa linha e os botões (modo, tema, MIDI, criar...) na linha de baixo */
+@media(max-width:767px) and (orientation:portrait){
+  .header{flex-direction:column;align-items:stretch;gap:5px;}
+  .logo{justify-content:flex-start;}
+  .logo h1{display:block;font-size:14px;white-space:nowrap;}
+  .header-actions{width:100%;flex-wrap:wrap;justify-content:flex-start;}
+}
 </style>
 </head>
 <body>
